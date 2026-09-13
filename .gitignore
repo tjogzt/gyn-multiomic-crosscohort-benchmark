@@ -1,11 +1,48 @@
+# --- Python ------------------------------------------------------------------
 __pycache__/
-*.pyc
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# --- R -----------------------------------------------------------------------
 .Rhistory
 .RData
+.Rproj.user/
+*.Rproj
+
+# --- LaTeX -------------------------------------------------------------------
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+
+# --- Work root ---------------------------------------------------------------
+# All intermediate and derived artefacts live here. It is produced by running
+# the pipeline and is never committed; see docs/pipeline.md.
+.work/
+
+# --- OS ----------------------------------------------------------------------
 .DS_Store
-# derived working objects (regenerate from public data)
-workdir/
-*.pkl
-*.npz
-*.npy
-!src/**
+.DS_Store?
+._*
+Thumbs.db
+
+# --- Editor ------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*~
+
+# --- Large binaries that belong in a release, not in the repository ----------
+# Figure exports are committed as PNG and PDF. EPS and TIFF are produced by
+# stage 15 and attached to the Zenodo release instead, so that the repository
+# stays small enough to clone.
+# Uncomment the next two lines to keep them out of git entirely:
+# results/figures/*.eps
+# results/figures/*.tif

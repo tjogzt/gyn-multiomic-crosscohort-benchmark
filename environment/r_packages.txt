@@ -1,9 +1,18 @@
-# R 4.5.0 / Bioconductor 3.21
+# R environment for the R side of the benchmark.
+# Verified against R 4.5.0 / Bioconductor 3.21.
+#
+# The R scripts read the same config/paths.yaml and config/params.yaml as the
+# Python side, so both toolchains run against one configuration.
+
 sva 3.56.0
 limma 3.64.3
 SNFtool 2.3.1
 MOFA2 1.18.0
 iClusterPlus 1.44.0
 mixOmics 6.32.0
-# intNMF and MCIA were delisted from CRAN/Bioconductor and are reimplemented
-# from the original publications in src/04_benchmark_R/ -- no substitute package was used.
+
+# Two methods evaluated in the benchmark have no available package: intNMF was
+# withdrawn from CRAN and the CRAN Archive, and MCIA was withdrawn from
+# Bioconductor (3.18-3.21). Both were reimplemented from their original
+# publications; see src/05_benchmark_r/05_02_benchmark_r_packages.R. No
+# substitute package was used in their place.

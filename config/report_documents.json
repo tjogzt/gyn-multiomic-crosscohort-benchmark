@@ -1,0 +1,108 @@
+{
+  "_comment": "Document vocabulary of the stage-10 document package (10_06, 10_07, 10_08). The report documents themselves live in paths.data.report_output_dir, the direction-F workspace outside this repository. Their titles are the exact file-name stems of the Markdown sources and of the PDFs built from them, and they are not ASCII; docs/coding_standard.md keeps every file of the repository ASCII, so each title is written here as a JSON \\uXXXX escape and json.load decodes it back to the exact name on disk. Declared order is the build order.",
+  "documents": {
+    "direction_f_positioning": {
+      "file_stem": "\u65b9\u5411F_\u5987\u79d1\u80bf\u7624\u518d\u5206\u578b_\u8fdb\u5c55\u4e0e\u9009\u9898\u8bba\u8bc1",
+      "description": "Direction F: gynaecological tumour re-typing - progress and justification of the topic."
+    },
+    "team_review_verdict": {
+      "file_stem": "\u56db\u65b9\u56e2\u961f\u5ba1\u67e5\u88c1\u51b3\u62a5\u544a_\u65b9\u5411F",
+      "description": "Verdict report of the four-team review of direction F."
+    },
+    "g0_external_cohort_acquisition_list": {
+      "file_stem": "\u5916\u90e8\u961f\u5217\u6570\u636e\u83b7\u53d6\u6e05\u5355_G0",
+      "description": "Acquisition list of the external cohorts, gate G0."
+    },
+    "preregistration_v0_1": {
+      "file_stem": "\u65b9\u5411F_\u9884\u6ce8\u518c\u8ba1\u5212_v0.1",
+      "description": "Direction F pre-registration plan, version 0.1."
+    },
+    "external_cohort_acquisition_report": {
+      "file_stem": "\u5916\u90e8\u961f\u5217\u83b7\u53d6\u6267\u884c\u62a5\u544a_S1S5",
+      "description": "Execution report of the external-cohort acquisition, sessions S1-S5."
+    },
+    "cross_cohort_alignment_test": {
+      "file_stem": "\u8de8\u961f\u5217\u5bf9\u9f50\u6d4b\u8bd5\u62a5\u544a",
+      "description": "Cross-cohort alignment test report."
+    },
+    "cross_cohort_alignment_test_v2": {
+      "file_stem": "\u8de8\u961f\u5217\u5bf9\u9f50\u6d4b\u8bd5\u62a5\u544a_v2",
+      "description": "Cross-cohort alignment test report, revision 2."
+    },
+    "preregistration_v0_2": {
+      "file_stem": "\u65b9\u5411F_\u9884\u6ce8\u518c\u8ba1\u5212_v0.2",
+      "description": "Direction F pre-registration plan, version 0.2."
+    },
+    "alignment_strategy_and_eeec_report": {
+      "file_stem": "\u5bf9\u9f50\u7b56\u7565\u9a8c\u8bc1\u4e0eEEEC\u83b7\u53d6\u62a5\u544a",
+      "description": "Validation of the alignment strategies and acquisition of the EEEC cohort."
+    },
+    "multiomic_integration_benchmark_report": {
+      "file_stem": "\u591a\u7ec4\u5b66\u6574\u5408\u57fa\u51c6\u62a5\u544a",
+      "description": "Multi-omic integration benchmark report."
+    },
+    "preregistration_v0_3": {
+      "file_stem": "\u65b9\u5411F_\u9884\u6ce8\u518c\u8ba1\u5212_v0.3",
+      "description": "Direction F pre-registration plan, version 0.3."
+    },
+    "eeec_phenotype_mapping_report": {
+      "file_stem": "EEEC\u8868\u578b\u6620\u5c04\u4e0e\u961f\u5217\u89e3\u6790\u62a5\u544a",
+      "description": "EEEC phenotype mapping and cohort resolution report."
+    }
+  },
+  "verification_documents": [
+    "direction_f_positioning",
+    "team_review_verdict",
+    "g0_external_cohort_acquisition_list",
+    "preregistration_v0_1",
+    "external_cohort_acquisition_report",
+    "cross_cohort_alignment_test",
+    "cross_cohort_alignment_test_v2",
+    "preregistration_v0_2"
+  ],
+  "required_tokens": {
+    "g0_external_cohort_acquisition_list": [
+      "PDC000357",
+      "phs003152.v1.p1",
+      "10.7937/6rda-p940",
+      "PXD046507",
+      "HRA018093",
+      "PXD068004",
+      "PXD015903",
+      "phs001287",
+      "PDC000125",
+      "PDC000439"
+    ],
+    "preregistration_v0_1": [
+      "PDC000125/126/226",
+      "PDC000357-362",
+      "phs003152.v1.p1",
+      "PXD046507",
+      "PXD068004",
+      "10.7937/6rda-p940",
+      "NCT05640999"
+    ],
+    "preregistration_v0_2": [
+      "PDC000439/441/443/445",
+      "PDC000125/126/226",
+      "PDC000357-362",
+      "phs003152.v1.p1",
+      "PXD046507",
+      "PXD068004",
+      "10.7937/6rda-p940",
+      "NCT05640999",
+      "ABSOLUTE_tumor_purity",
+      "Tumor_purity"
+    ],
+    "cross_cohort_alignment_test": [
+      "align_concordance.json",
+      "dirF_alignment.png"
+    ],
+    "cross_cohort_alignment_test_v2": [
+      "bridge_3cohort.json",
+      "b3_anchors.json",
+      "tcga450k_genelevel_ucec.csv.gz",
+      "dirF_bridge.png"
+    ]
+  }
+}

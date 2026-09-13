@@ -1,131 +1,98 @@
-# Cross-cohort multi-omic integration benchmark (gynaecological tumours)
+# Cross-cohort multi-omic integration benchmark in gynaecological tumours
 
 Replication package for a methodological benchmark asking **how well multi-omic
-integration transfers across independent cohorts**, rather than within a single one.
+integration transfers across independent cohorts** — the evaluation target that
+matters for any method that must generalise beyond the cohort it was fitted on.
 
-> **Manuscript status.** The manuscript text is not included in this repository by
-> design. This package contains the code, the harmonised intermediate objects, and
-> the figure/table generation and verification harness.
+Five public cohorts, two fully independent toolchains (eight self-implemented
+Python methods over scikit-learn, six official R packages), and two orthogonal
+perturbation designs.
 
----
+## Findings
 
-## Headline results (all reproducible from this package)
+1. **Layer count has negative marginal value.** Cross-cohort transfer decreases
+   monotonically as omics layers are added, in both evaluation domains and both
+   toolchains. Two mechanisms operate together: intersecting layers collapses the
+   analysable sample set (TCGA 539 → 390, CPTAC-UCEC Independent 138 → 84), and
+   weakly comparable layers contribute cohort-specific variance that cannot be
+   reproduced in the held-out cohort.
 
-| # | Result | Evidence strength |
-|---|---|---|
-| 1 | **Layer count has negative marginal value**: cross-cohort transfer decreases monotonically as layers are added | A — replicated in two fully independent toolchains |
-| 2 | **"Best method" is not resolvable**: the winner flips in 50% of evaluation units; top-2 differ at p = 0.669; one method differs 17.6× between implementations | A |
-| 3 | **The covariance layer is fragile**: per-gene corrections remove mean separation but not multivariate separability; first-order effect sizes transfer across platforms, second-order network structure retains ~35% | A — two orthogonal perturbation designs |
-| 4 | Two pre-registered gates resolve as **undecidable**, not as failures | — |
+2. **The "best method" is not a resolvable claim.** The winning method changes in
+   50% of evaluation units when the held-out cohort changes; the top two methods
+   are statistically indistinguishable; and the same published method differs
+   17.6-fold between two implementations of it.
 
----
+3. **The covariance layer is the fragile layer.** In a perfectly crossed batch
+   design, per-gene corrections drive mean separation to exactly chance while
+   multivariate separability stays complete. Cross-platform, first-order effect
+   sizes transfer at same-cohort level while second-order network structure
+   retains about one third of that concordance.
+
+Two of six pre-registered decision gates resolved as **undecidable** rather than
+as failures — one for lack of information (the effect size that was pre-specified
+requires 479 evaluation records where 22 exist), the other because the measuring
+instrument was degenerate. The distinction, and a procedure for deriving decision
+thresholds from the measured noise distribution instead of assuming them, is the
+most transferable output of the work.
 
 ## Repository layout
 
 ```
-src/
-  00_harmonisation/          layer harmonisation, ID mapping, numeric domains
-  01_protein_bridge/         protein Δ(T−N) repair, biological anchor
-  02_alignment_strategies/   ComBat / quantile / Δ-reference strategy matrix
-  03_benchmark_python/       eight self-implemented Python method arms
-  04_benchmark_R/            six official R packages (+ two reimplementations)
-  05_pac_stability/          consensus-clustering stability (PAC)
-  06_batch_testbed/          EEEC perfectly-crossed 2×2 batch design
-  07_cross_platform/         LFQ vs TMT: first- vs second-order concordance
-  08_purity_G2/              purity-aware arms and the G2 gate
-  09_thresholds_G3/          threshold derivation and the G3 gate
-  10_cross_implementation/   Python × R grid-level comparison
-  11_figures/                figure generation (shared style module + per-figure scripts)
-  12_tables/                 table extraction
-  13_verification/           number verification and submission-compliance checks
-  14_exports/                EPS / TIFF export
-results/
-  figures/                   all main and supplementary figures: PNG + PDF + EPS + TIF
-  tables/                    12 machine-readable CSVs
-docs/
-  figure_index.md            figure → content mapping
-  table_legends.md           table descriptions
-environment/                 pinned Python and R package versions
+config/       paths.yaml, params.yaml          every location and parameter
+src/common/   config loader, plotting style    shared modules
+src/01..15/   the analysis, in execution order
+results/      figures, tables, verification    published deliverables
+docs/         pipeline, coding standard, data sources, figure index
+manuscript/   LaTeX sources of the manuscript and supplement
 ```
 
----
+`docs/pipeline.md` describes each stage, its inputs and outputs, and the
+dependency order. `docs/coding_standard.md` states the rules the code follows.
 
-## How to reproduce
-
-The pipeline is staged and each stage reads only the previous stage's outputs.
-Run from the repository root:
+## Reproducing
 
 ```bash
-# Python 3.12 with environment/requirements.txt
-python src/00_harmonisation/e1b_harmonize.py          # -> harmonised layers
-python src/00_harmonisation/a5_concordance.py         # -> cross-cohort concordance
-python src/01_protein_bridge/b1_bridge.py             # -> protein Δ repair
-python src/02_alignment_strategies/e2b_ari.py         # -> strategy × layer ARI
-python src/03_benchmark_python/f2_benchmark.py        # -> 8 Python arms
-Rscript src/04_benchmark_R/r5_bench.R                 # -> 6 R packages
-python src/05_pac_stability/h1_pac.py                 # -> PAC
-python src/06_batch_testbed/k2_correct.py             # -> batch correction arms
-python src/07_cross_platform/l2_platform2.py          # -> cross-platform ladder
-python src/08_purity_G2/n6_pai.py                     # -> purity arms
-python src/09_thresholds_G3/p4_g3_power.py            # -> G3 threshold derivation
+export GYN_DATA_ROOT=/path/to/your/copy      # see docs/data_sources.md
+export GYN_WORK_ROOT=/path/to/scratch        # defaults to ./.work
 
-# figures and tables
-for f in src/11_figures/{r3_fig12,r7_fig3,r11_fig45,s1_figS123,s2_figS45,s3_figS6,s4_figS8,u4_figS7}.py; do
-  python "$f"
+# Stages run in order; each directory's files are numbered in run order.
+for d in src/0[1-9]_* src/1[0-5]_*; do
+    for f in "$d"/*.py; do python "$f"; done
 done
-python src/12_tables/t1_tables.py && python src/12_tables/t2_mdtables.py
 
-# verification
-python src/13_verification/c1_compliance.py           # submission compliance
-python src/11_figures/r5_geomcheck.py                 # figure geometry harness
+# The R side of the benchmark reads the same configuration.
+Rscript src/05_benchmark_r/05_02_benchmark_r_packages.R
 ```
 
-**Random seed** is 49 throughout. All figures are built at a fixed physical width so
-that the smallest in-figure type stays ≥ 8 pt at print size; this is enforced
-programmatically by `src/11_figures/figstyle.py::check`, which extracts the rendered
-text bounding boxes and fails on sub-8 pt type, overlapping text, or content bleeding
-outside the canvas.
+Nothing needs to be edited to relocate the analysis: every path and every
+parameter is read from `config/`, and any single entry can be overridden with an
+environment variable named after its dotted path (`GYN_DATA_ROOT`,
+`GYN_WORK_ROOT`, `GYN_CLUSTERING_K_PRIMARY`, …). The random seed is fixed
+globally at `params.yaml → seed`.
 
----
+## Verification
+
+Outputs are checked, not asserted:
+
+- **Figure geometry** — every rendered text element is measured and the build
+  fails on type below 8 pt at print size, on text overlap, or on content leaving
+  the canvas.
+- **Number tracing** — every number in the manuscript sources is extracted
+  automatically and looked up in the artefact that produced it.
+- **Submission compliance** — figure width against the journal's 180 mm limit,
+  raster resolution, and a vector audit that distinguishes genuine vector EPS
+  from output that a converter silently rasterised.
 
 ## Data
 
-All input data are previously published, de-identified public datasets; no ethical
-approval was required. See [`DATA.md`](DATA.md) for sources, accessions and download
-instructions. Raw inputs are **not** redistributed here — only the code needed to
-fetch and harmonise them.
+All inputs are previously published, de-identified public datasets. None are
+redistributed; `docs/data_sources.md` lists every source and accession. No new
+human or animal subjects were involved and no ethical approval was required.
 
----
+## Licence
 
-## What is deliberately not here
-
-- **The manuscript text.** Not redistributed.
-- **Raw third-party data.** Re-downloadable from the public sources listed in `DATA.md`.
-- **Exploratory scripts.** Roughly 230 additional scripts were written during
-  development; the 79 included here are the canonical pipeline that reproduces the
-  reported results.
-
----
-
-## Known limitations (disclosed in the manuscript)
-
-- The reference partition used by the transfer metric is derived by K-means, which
-  structurally favours K-means-family methods. The "simplest methods win" statement
-  is scoped to that reference construction.
-- `MOFA2` results are indicative: R and its basilisk-managed mofapy2 each ship a
-  libomp, so `KMP_DUPLICATE_LIB_OK=TRUE` was required (the package warns this may
-  affect results).
-- Two packages (intNMF, MCIA) were delisted from CRAN and Bioconductor and are
-  reimplemented from their original descriptions. They are labelled as equivalents
-  and no substitute package was used in their place.
-
----
+See `LICENSE`.
 
 ## Citation
 
-If you use this code, please cite the manuscript (full reference to be added on
-publication) and this archive via its Zenodo DOI.
-
-## License
-
-MIT — see [`LICENSE`](LICENSE).
+See `CITATION.cff`.

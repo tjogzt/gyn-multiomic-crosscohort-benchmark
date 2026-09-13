@@ -1,9 +1,20 @@
-# Python 3.12 (Anaconda). Verified versions:
+# Python environment for the analysis pipeline.
+# Verified against Python 3.12 (Anaconda distribution).
+#
+# Install with:  pip install -r environment/requirements.txt
+
 numpy==2.2.6
 pandas==2.2.3
 scipy==1.13.1
 scikit-learn==1.6.1
 matplotlib==3.9.3
-Pillow==11.2.1
+
+# Required by src/common/config.py to read config/paths.yaml and config/params.yaml.
+PyYAML==6.0.2
+
+# Batch correction in the EEEC testbed (stage 07).
 harmonypy==2.0.0
+
+# Image and PDF handling for the figure export and compliance checks (stages 14, 15).
+Pillow==11.2.1
 PyMuPDF==1.25.1

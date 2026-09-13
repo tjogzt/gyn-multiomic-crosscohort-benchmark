@@ -1,0 +1,178 @@
+# =============================================================================
+# legacy_label_map.yaml -- non-English labels carried by the legacy analysis
+# artefacts, with the English strings the published tables and the
+# verification scripts must show.
+#
+# Why this file exists
+#     The pre-refactor pipeline wrote method, layer, domain, batch-arm and
+#     effect-size-bin names in Chinese into its JSON artefacts
+#     (bench_summary.json, bench_merged.json, pac_agg.json,
+#     platform_results.json, eeec_batch/*). Those strings are lookup KEYS, not
+#     prose: the only correct translation is the one that matches the artefact.
+#     They are therefore data and live here rather than inside a module.
+#
+# Encoding
+#     Every non-ASCII character is written as a \uXXXX escape, so this file,
+#     like the rest of config/, contains no CJK character on disk while the
+#     strings it yields at load time are byte-identical to the artefact keys.
+#
+# Loading
+#     yaml.safe_load((PROJECT_ROOT / 'config' / 'legacy_label_map.yaml')
+#                    .open(encoding='utf-8'))
+# =============================================================================
+
+# Method-arm key -> display name. Covers the eight Python and six R arms.
+method:
+  "1_SNF": "SNF"
+  "2_NMF(concat)": "NMF"
+  "3_KMeans(concat)": "KMeans"
+  "4_PCA(concat)": "PCA"
+  "5_\u8c31\u5d4c\u5165(concat)": "Spectral embedding"
+  "6_\u5171\u8054\u5171\u8bc6": "Co-association consensus"
+  "7_MCCA-lite": "MCCA-lite"
+  "8_MOFA-lite": "MOFA-lite"
+  "2_intNMF\u7b49\u4ef7": "intNMF (equivalent impl.)"
+  "6_MOFA2": "MOFA2"
+  "5_iClusterPlus": "iClusterPlus"
+  "3_MCIA\u7b49\u4ef7(MFA)": "MCIA (equivalent impl., MFA)"
+  "4_mixOmics": "mixOmics"
+
+# Layer key -> display name. Layer names as spelled in align_domains.json.
+layer:
+  "\u7532\u57fa\u5316450K": "Methylation 450K"
+  "CNA(GISTIC2)": "CNA (GISTIC2)"
+  "CNA(GISTIC)": "CNA (GISTIC)"
+  "CNA(log2)": "CNA (log2)"
+  "mRNA(EB++Adjust)": "mRNA (EB++)"
+  "RNAseq(gene)": "RNA-seq (gene)"
+  "RNAseq": "RNA-seq"
+  "Proteome": "Proteome"
+  "Phospho": "Phosphoproteome"
+  "Acetyl": "Acetylproteome"
+  "Meth": "Methylation"
+  "miRNA": "miRNA"
+  "RPPA": "RPPA"
+  "mRNA": "mRNA"
+  "CNA": "CNA"
+  "N-glyco(site)": "N-glycoproteome (site)"
+  "Phospho(gene)": "Phosphoproteome (gene)"
+
+# Declared numeric value domain -> display name.
+value_domain:
+  "\u5176\u5b83": "other"
+  "log2ratio": "log2 ratio"
+  "beta[0,1]": "beta [0,1]"
+  "GISTIC[-2,2]": "GISTIC [-2,2]"
+  "log2(count+)": "log2(count+)"
+
+# Domain key of bench_availability.json -> short domain label.
+availability_domain:
+  "A_CPTAC\u4e09\u961f\u5217": "A (CPTAC three-cohort)"
+  "B_EC\u56db\u5c42": "B (EC, four-layer)"
+
+# Domain key of bench_summary.json tab3 -> the one-letter domain key the number
+# extraction (14_02/14_03) uses to label the layer-count curve. The keys are the
+# same legacy labels as in availability_domain above; they are listed separately
+# because the summary table is indexed by the legacy key while the report labels
+# the domain by its one-letter key.
+benchmark_domain:
+  "A_CPTAC\u4e09\u961f\u5217": "A"
+  "B_EC\u56db\u5c42": "B"
+
+# Layer key of align_concordance.json -> display name.
+concordance_layer:
+  "\u8868\u8fbe": "mRNA"
+  "\u62f7\u8d1d\u6570": "CNA"
+  "\u7532\u57fa\u5316": "Methylation (within CPTAC)"
+  "\u86cb\u767d": "Protein"
+
+# Batch-correction arm of eeec_batch/* -> display name.
+batch_arm:
+  "S0 \u539f\u59cb log2": "S0 raw log2"
+  "S1 \u9010\u57fa\u56e0 z\uff08\u5168\u5c40\uff09": "S1 global per-gene z"
+  "S2 \u6279\u6b21\u5185\u9010\u57fa\u56e0 z\uff08\u4e0a\u9650\uff09": "S2 within-batch per-gene z (ceiling)"
+  "S3 \u9010\u6837\u672c\u5206\u4f4d\u6570\u6807\u51c6\u5316": "S3 per-sample quantile"
+  "S4 \u9010\u6837\u672c\u79e9\u2192\u9006\u6b63\u6001": "S4 per-sample rank-to-INT"
+  "ComBat \u89c4\u8303\uff08sva\uff09": "ComBat (sva)"
+  "ComBat mean-only": "ComBat (mean-only)"
+  "removeBatchEffect\uff08limma\uff09": "removeBatchEffect (limma)"
+  "S5 Harmony\uff08\u5d4c\u5165\u5c42\uff09": "Harmony (embedding)"
+
+# Comparison label of platform_results.json -> display name.
+platform_pair:
+  "\u2460 EEEC-E vs EEEC-L\uff08\u540c\u961f\u5217\u8de8\u6279\u6b21\uff09": "EEEC-E vs EEEC-L (same cohort, cross-batch)"
+
+# Effect-size bin label of platform_results.json -> display name.
+effect_bin:
+  "Q1 \u6700\u5f31": "Q1 (weakest)"
+  "Q2": "Q2"
+  "Q3": "Q3"
+  "Q4 \u6700\u5f3a": "Q4 (strongest)"
+
+# Fixed strings of the legacy manuscript layout.
+special:
+  "reference_heading": "## \u53c2\u8003\u6587\u732e"
+  # Tokens the submission-compliance check treats as an unresolved placeholder.
+  "placeholder_tokens":
+    - "\u5f85\u8865"
+    - "\u5360\u4f4d"
+  # File name of the figure-plan source, which is not ASCII.
+  "figure_plan_filename": "F1_\u56fe\u4ef6\u89c4\u5212\u4e0e\u56fe\u6ce8.md"
+
+
+# -----------------------------------------------------------------------------
+# Display-name vocabularies used INSIDE the figures.
+#
+# These are shorter than the names the tables print (the figure legend says
+# "Spectral" where the table says "Spectral embedding"), so they are kept as
+# separate sections rather than merged. Every non-ASCII character is written as
+# a \uXXXX escape, so this file contains no CJK character on disk while the
+# strings it yields at load time are byte-identical to the artefact keys.
+# -----------------------------------------------------------------------------
+
+# Method key -> short label printed in a figure legend.
+figure_method:
+  "1_SNF": "SNF"
+  "2_NMF(concat)": "NMF"
+  "3_KMeans(concat)": "KMeans"
+  "4_PCA(concat)": "PCA"
+  "5_\u8c31\u5d4c\u5165(concat)": "Spectral"
+  "6_\u5171\u8054\u5171\u8bc6": "Co-assoc."
+  "7_MCCA-lite": "MCCA"
+  "8_MOFA-lite": "MOFA"
+  "2_intNMF\u7b49\u4ef7": "intNMF*"
+  "6_MOFA2": "MOFA2"
+  "5_iClusterPlus": "iCluster"
+  "3_MCIA\u7b49\u4ef7(MFA)": "MCIA*"
+  "4_mixOmics": "mixOmics"
+
+# Layer key -> short label printed in a figure axis.
+figure_layer:
+  "\u8868\u8fbe": "mRNA"
+  "\u62f7\u8d1d\u6570": "CNA"
+  "\u7532\u57fa\u5316": "Methylation"
+  "\u86cb\u767d": "Protein"
+  "mRNA": "mRNA"
+  "miRNA": "miRNA"
+  "CNA": "CNA"
+  "meth": "Methylation"
+  "RPPA": "RPPA"
+  "\u7532\u57fa\u5316450K": "Methylation450K"
+
+# Verdict and strategy wording used inside figure annotations, kept as a
+# vocabulary so the wording stays consistent between panels.
+figure_term:
+  "\u57fa\u7ebf": "baseline"
+  "\u5206\u4f4d\u6570\u6807\u51c6\u5316": "quantile norm."
+  "\u0394\u53c2\u8003\u6821\u6b63": "\u0394-reference"
+  "ComBat(\u6c60\u5316)": "ComBat (pooled)"
+  "\u6052\u7b49\u6027\u9a8c\u8bc1": "identity check"
+  "\u53ef\u91cd\u590d\u6027\u5929\u82b1\u677f": "reproducibility ceiling"
+  "\u6570\u503c\u6052\u7b49\u9608\u503c": "identity threshold"
+  "\u9000\u5316\u9608\u503c": "degeneracy threshold"
+  "\u5b9e\u8d28\u4e0b\u9650": "substantive floor"
+  "null 95 \u5206\u4f4d": "null 95th pct"
+  "\u961f\u5217\u5185\u8fde\u81ea\u5df1\u90fd\u590d\u73b0\u4e0d\u4e86": "within-cohort: cannot reproduce itself"
+  "\u95e8\u69db": "threshold"
+  "\u57fa\u7ebf\u503c": "baseline"
+

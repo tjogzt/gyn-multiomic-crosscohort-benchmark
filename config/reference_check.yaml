@@ -1,0 +1,61 @@
+# =============================================================================
+# reference_check.yaml -- data behind the reference checks of stage 14.
+#
+# This file is DATA, not configuration of behaviour, and it lives in config/
+# because the scripts of stage 14 must not carry it in their source:
+#
+#   * the reference-section heading and the DOI pattern are written in the
+#     language of the manuscript. The manuscript is typeset outside this
+#     repository (paths.data.report_output_dir) and its reference list is not
+#     ASCII, so the two tokens must match its text exactly and cannot be
+#     translated. Moving them here keeps src/ free of non-ASCII characters, as
+#     docs/coding_standard.md §1 requires (the same arrangement as
+#     paths.data.report_documents_manifest, whose document titles are also kept
+#     out of the code for this reason);
+#
+#   * the records below are the fixed output of bibliographic lookups that were
+#     performed once against Crossref and PubMed, plus the lookups confirmed by
+#     hand. They are evidence, not settings, and a run must reproduce them
+#     rather than re-derive them;
+#
+#   * the two tokens are therefore a Chinese heading and a Chinese-token class;
+#     both are escaped in \uXXXX form so that this file itself stays ASCII.
+#
+# Declared as paths.data.reference_check_manifest; consumers are
+# src/14_verification/14_05_verify_references.py and
+# src/14_verification/14_06_map_citations.py.
+# =============================================================================
+
+# Heading that opens the reference list of the Discussion. Everything after the
+# first occurrence of this line is the bibliographic list; everything before it
+# is the narrative text that cites the list.
+section_heading: "## \u53c2\u8003\u6587\u732e"
+
+# Regular expression that captures one DOI written in a reference entry, keyed on
+# the literal "doi:" label the manuscript prints. The negated class lists the
+# punctuation the manuscript may place directly after a DOI in its own script
+# (the two full-width closing parentheses, the full-width full stop, an ASCII
+# comma and the full-width opening parenthesis); excluding them stops the
+# capture from swallowing trailing punctuation. The second full-width parenthesis
+# is a duplicate carried over verbatim from the legacy expression, which does not
+# change what the class excludes.
+doi_pattern: "doi:(10\\.[^\\s\uff09\uff09\u3002,\uff08*]+)"
+
+# Bibliographic records confirmed by hand, supplementing the machine lookups
+# harvested into the disc_refs work files. Each record is
+#   doi:    the DOI exactly as the registry returned it (matched case-insensitively)
+#   source: the lookup that confirmed it ("pubmed-efetch" full-text abstract
+#           fetch, "crossref-*" Crossref calls, "ref_verify2" the second
+#           reference-verification pass)
+#   note:   one-line memory aid printed next to a matched DOI
+confirmed_records:
+  - {doi: "10.1016/j.cell.2016.05.069", source: "pubmed-efetch", note: "Zhang H, Cell 2016"}
+  - {doi: "10.1038/s41467-020-20430-7", source: "crossref-q8", note: "Cantini L, Nat Commun 2021"}
+  - {doi: "10.1016/j.ccell.2023.07.007", source: "pubmed-q3", note: "Dou Y, Cancer Cell 2023"}
+  - {doi: "10.1038/s41588-024-01703-z", source: "pubmed-q3", note: "Hu Z, Nat Genet 2024"}
+  - {doi: "10.1073/pnas.1208949110", source: "pubmed-q4", note: "Mo Q, PNAS 2013"}
+  - {doi: "10.1093/bioinformatics/btp659", source: "crossref-r2", note: "Shen R, Bioinformatics 2009"}
+  - {doi: "10.1007/bf01908075", source: "crossref-r2", note: "Hubert and Arabie, 1985"}
+  - {doi: "10.1038/nature12113", source: "ref_verify2", note: "Kandoth, Nature 2013"}
+  - {doi: "10.1038/s41592-019-0619-0", source: "crossref-r2", note: "Korsunsky, Nat Methods 2019"}
+  - {doi: "10.1016/j.cell.2025.10.043", source: "pubmed-efetch", note: "Cell 2025 erratum"}

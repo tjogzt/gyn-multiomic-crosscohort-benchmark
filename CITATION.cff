@@ -1,0 +1,28 @@
+cff-version: 1.2.0
+message: "If you use this software or the benchmark results, please cite it as below."
+title: "Cross-cohort multi-omic integration benchmark in gynaecological tumours"
+abstract: >-
+  Code, figures, tables and a verification harness for a methodological benchmark
+  of cross-cohort multi-omic integration. The package evaluates whether adding
+  omics layers improves cross-cohort transfer, whether the identity of the best
+  integration method is a resolvable claim, and where multi-omic integration is
+  fragile. It ships two independent toolchains, two orthogonal perturbation
+  designs, a geometric figure checker and an automated number-tracing harness.
+type: software
+authors:
+  - family-names: Zhu
+    given-names: Tao
+    orcid: "https://orcid.org/0009-0001-0779-2245"
+    affiliation: "Department of Obstetrics and Gynaecology, Tongji Hospital, Huazhong University of Science and Technology"
+keywords:
+  - multi-omics integration
+  - cross-cohort transfer
+  - benchmark
+  - batch effects
+  - reproducibility
+  - endometrial cancer
+  - ovarian cancer
+license: MIT
+version: "1.0.0"
+date-released: "2026-09-13"
+repository-code: "https://github.com/tjogzt/gyn-multiomic-crosscohort-benchmark"

@@ -1,0 +1,998 @@
+# =============================================================================
+# params.yaml -- every analysis parameter, threshold and categorical vocabulary.
+#
+# Business logic must read these through src/common/config.py (param("key")).
+# Nothing here may be duplicated as a literal inside a module, with the single
+# exception noted under `seed` below.
+#
+# Values are the frozen, pre-registered settings of the study. Changing any of
+# them changes results and must be recorded as a new pre-registration version.
+# =============================================================================
+
+# --- Reproducibility ---------------------------------------------------------
+
+# The one literal that modules are permitted to carry: every stochastic routine
+# must be seeded from this value so that any file can be re-run in isolation.
+seed: 49
+
+# --- Cohort vocabulary -------------------------------------------------------
+
+cohorts:
+  # Reference cohort, TCGA-UCEC.
+  tcga: TCGA
+  # CPTAC-UCEC external cohorts.
+  discovery: Discovery
+  independent: Independent
+  # CPTAC ovarian cohort, the second analysis domain.
+  ov: OV
+  # Early-onset endometrioid carcinoma cohort, used as the batch testbed.
+  eeec: EEEC
+
+# The two evaluation domains. Domain A is the three CPTAC cohorts; domain B is
+# TCGA-UCEC together with the two CPTAC-UCEC cohorts.
+domains:
+  A: CPTAC_3cohort
+  B: EC
+
+# Omics layers in the order used for display and concatenation.
+layers:
+  - mRNA
+  - miRNA
+  - CNA
+  - methylation
+  - protein
+
+# Layers that can be integrated across cohorts. RPPA and cross-platform
+# methylation are excluded after the comparability screen.
+integrable_layers:
+  - mRNA
+  - miRNA
+  - CNA
+  - methylation
+
+# --- Feature-space construction ---------------------------------------------
+
+features:
+  # Number of genes retained per layer by median absolute deviation.
+  top_mad_genes: 1500
+  # Minimum number of shared genes for a cohort pair to be evaluated at all.
+  min_shared_genes: 50
+  # Standardisation is applied per layer before and after concatenation.
+  zscore_before_concat: true
+  zscore_after_concat: true
+
+# --- Harmonisation probes ----------------------------------------------------
+# Settings of the stage-01 probes that scan the raw matrices. They bound how much
+# of a matrix is read (the pan-cancer matrices are tens of gigabytes) and fix the
+# thresholds at which a matrix is labelled with an identifier system or a numeric
+# domain. None of them enters a model downstream.
+
+harmonisation_probe:
+  # Data lines read per matrix (header included) when only the identifier system
+  # and the column count are needed.
+  head_rows: 4
+  # Row identifiers sampled per file when classifying an identifier system.
+  id_sample_size: 300
+  # Share of sampled identifiers starting with ENSG above which the row index is
+  # recorded as ENSG-based rather than symbol-based.
+  ensg_ratio_threshold: 0.6
+  # Annotation resources listed, and opened for a structure sample, when the
+  # identifier resources are inventoried.
+  resource_list_limit: 25
+  resource_sample_limit: 6
+  # Case-insensitive regex matched against file names to find annotation files.
+  annotation_file_pattern: "probemap|annot|gene_id|hugo|gencode|gpl|illumina"
+  # Feature rows and sample columns drawn when profiling a matrix's numeric
+  # domain; sampling keeps the widest matrices cheap to read.
+  domain_sample_rows: 2500
+  domain_sample_cols: 200
+  # Percentiles reported for the sampled values of each matrix.
+  domain_quantiles: [5, 50, 95]
+  # Numeric-domain decision boundaries (see 01_04_profile_numeric_domains.py).
+  domain_beta_max: 1.0
+  domain_beta_min_spread: 0.3
+  domain_unit_min: -1.01
+  domain_unit_max: 1.01
+  domain_unit_min_spread: -0.5
+  domain_gistic_min: -3.0
+  domain_gistic_max: 3.0
+  domain_count_min: 10.0
+  domain_log2ratio_min_max: 3.0
+  # Sample columns drawn per matrix when comparing per-gene mean profiles across
+  # cohorts, and the minimum number of shared genes for a pair to be scored.
+  concordance_sample_cols: 250
+  concordance_min_shared: 100
+  # Spearman rho separating high from moderate from low profile concordance.
+  concordance_high_rho: 0.8
+  concordance_moderate_rho: 0.5
+
+# --- Clustering and transfer protocol ---------------------------------------
+
+clustering:
+  # K values evaluated; k_primary is the one reported as the main result.
+  k_values: [3, 4, 5]
+  k_primary: 4
+  n_init: 5
+  # Number of bootstrap resamples used to build the consensus matrix.
+  n_bootstrap: 12
+
+# --- Stability and degeneracy -----------------------------------------------
+
+stability:
+  # A consensus value inside this interval counts as an ambiguous pair (PAC).
+  pac_lower: 0.10
+  pac_upper: 0.90
+  # A clustering is flagged degenerate when its largest cluster holds more than
+  # this fraction of samples; flagged records are excluded from verdicts.
+  max_cluster_fraction: 0.70
+  # Thresholds for the "strong consensus" and median-consensus diagnostics.
+  strong_consensus: 0.90
+  # Minimum number of samples in a cohort x layer-subset block. Below this the
+  # block is skipped: a bootstrap consensus matrix over fewer samples cannot
+  # support the PAC diagnostic.
+  min_samples: 40
+  # Minimum number of genes that the MAD filter must retain for a layer block.
+  # If fewer survive (heavily imputed layers), the block falls back to the
+  # leading genes of the available ranking so that the feature space is not empty.
+  min_block_genes: 50
+  # A bootstrap resample is only used when it retains at least this multiple of
+  # k distinct samples; otherwise some clusters cannot be filled and the
+  # replicate would bias PAC downwards.
+  bootstrap_unique_factor: 3
+  # Minimum number of usable bootstrap replicates for a PAC estimate.
+  min_bootstrap_replicates: 4
+  # Minimum number of finite sample pairs for a PAC estimate.
+  min_valid_pairs: 100
+  # Minimum number of PAC x transfer-ARI records in one domain before a
+  # per-domain correlation is reported.
+  min_cross_records: 10
+  # PAC bins used to read the transfer ARI as a function of consensus stability.
+  # Upper bounds are exclusive, except for the last bin.
+  pac_bins: [[0.00, 0.30], [0.30, 0.45], [0.45, 0.60], [0.60, 1.01]]
+
+# --- Statistical machinery ---------------------------------------------------
+
+statistics:
+  alpha: 0.05
+  power: 0.80
+  # Label permutations for the cross-platform permutation tests.
+  n_permutations: 500
+  # Number of effect-size quartiles used for the cross-platform ladder.
+  n_effect_bins: 4
+  # Confidence level for the interval reported on the G2 arms.
+  ci_level: 0.95
+  # Two-sided interval multiplier actually applied to the paired differences of
+  # the G2 arms: the 97.5th percentile of the standard normal. It is stored as
+  # the literal the released interval bounds were computed with instead of being
+  # derived from ci_level, because deriving it (1.959964 rather than 1.96) would
+  # move the fourth decimal of those bounds and so change published numbers.
+  ci_z: 1.96
+
+# --- Batch testbed -----------------------------------------------------------
+
+batch_testbed:
+  # Minimum completeness of a protein group within every batch x condition cell.
+  min_cell_completeness: 0.80
+  # Samples per cell in the fully crossed EEEC design.
+  samples_per_cell: 49
+  # Number of neighbours for the kNN batch-mixing metric.
+  knn_neighbours: 10
+  # Cross-validation folds for the total-separability metric.
+  cv_folds: 5
+  # Prefix of the MaxQuant label-free quantification columns. Every column of
+  # the proteinGroups table that starts with this prefix is one sample.
+  lfq_prefix: "LFQ intensity "
+  # Columns of the MaxQuant proteinGroups table that 07_01 reads: the protein
+  # identifier, the gene name and the three MaxQuant quality flags.
+  protein_group_columns: [Protein IDs, Gene names, Reverse, Potential contaminant, Only identified by site]
+  # Sample-name families in the LFQ headers. The leading letter is the batch and
+  # the remainder the condition; "Llymp" and "baoyu" lie outside the fully
+  # crossed four-cell design and are not part of the main analysis.
+  sample_families: [Ecan, Enorm, Lcan, Lnorm, Llymp, baoyu]
+  # The four balanced cells of the 2 x 2 design used for the main analysis.
+  balanced_families: [Ecan, Enorm, Lcan, Lnorm]
+  # Batch and condition vocabularies of the design. The classifier targets
+  # encode the batch named by reference_batch and the condition named by
+  # positive_condition as 1.
+  batches: [E, L]
+  reference_batch: L
+  conditions: [can, norm]
+  positive_condition: can
+  # Hyperparameters of the two separability classifiers used by 07_03 and 07_04.
+  logistic_c: 0.10
+  logistic_max_iter: 3000
+  svm_c: 0.01
+  svm_max_iter: 20000
+  # Principal components computed before the covariance-layer sweeps.
+  pca_components: 30
+  # Leading principal components removed one after the other in the S2 sweep.
+  pc_removal_sweep: [0, 1, 2, 3, 4, 5, 8, 12, 20]
+  # Leading principal components reported with their association to batch and
+  # condition.
+  pc_association_top: 10
+  # Harmony embedding used by the S5 arm: retained components and iterations.
+  harmony_n_pcs: 50
+  harmony_max_iter: 20
+  # Display labels of the nine correction arms. 07_02 writes them into the arm
+  # matrices, 07_03 and 07_04 read them back, so the vocabulary is defined once.
+  arms:
+    raw: "S0 raw log2"
+    pygen: "S1 global per-gene z"
+    pygen_max: "S2 within-batch per-gene z (ceiling)"
+    quantile: "S3 per-sample quantile"
+    rankint: "S4 per-sample rank-to-INT"
+    embed: "Harmony (embedding)"
+  # Arms produced by the R side (sva / limma) and read back from the R outputs
+  # declared in paths.work.
+  r_arms:
+    combat: "ComBat (sva)"
+    combat_mean_only: "ComBat (mean-only)"
+    remove_batch_effect: "removeBatchEffect (limma)"
+  # Reporting order of the nine arms: the Python arms, the three R arms, then
+  # the embedding-layer arm last because it retains only the retained PCs.
+  arm_order: [raw, pygen, pygen_max, quantile, rankint, combat, combat_mean_only, remove_batch_effect, embed]
+
+# --- Cross-platform comparison ----------------------------------------------
+
+platform:
+  # Protein groups shared between the label-free and TMT platforms.
+  shared_proteins: 2226
+  # Protein pairs in the correlation network.
+  network_pairs: 2434321
+
+# --- EEEC proteome group semantics (stage 08) --------------------------------
+# Thresholds and vocabularies used to confirm, from the data alone, that the
+# "can" and "norm" sample families of the EEEC label-free proteome carry the
+# tumour/normal semantics the batch testbed assumes.
+
+eeec_semantics:
+  # Minimum number of unique peptides for a protein group to be retained.
+  min_unique_peptides: 2
+  # Sample-name prefix families present in the EEEC label-free proteome. The
+  # family is the leading alphabetic run of a sample name.
+  families: [Ecan, Enorm, Lcan, Lnorm, Llymp, baoyu]
+  # Minimum fraction of samples in which a protein must be quantified to stay
+  # in the matrix (dropna threshold = min_sample_completeness * n_samples).
+  min_sample_completeness: 0.60
+  # Minimum number of proteins shared by two families before their mean spectra
+  # are compared; below this the correlation is not interpretable.
+  min_shared_proteins: 100
+  # Minimum samples per group for a per-protein Mann-Whitney U comparison.
+  min_group_samples: 5
+  # Family pairs tested for a tumour-versus-normal abundance shift.
+  differential_family_pairs:
+    - [Ecan, Enorm]
+    - [Lcan, Lnorm]
+  # Family pairs whose within/between Spearman correlation is reported. The
+  # self-pairs give the within-family ceiling.
+  correlation_family_pairs:
+    - [Ecan, Ecan]
+    - [Enorm, Enorm]
+    - [Ecan, Enorm]
+    - [Ecan, Lcan]
+    - [baoyu, baoyu]
+    - [baoyu, Ecan]
+
+# --- Cross-platform comparison (stage 08) ------------------------------------
+
+cross_platform:
+  # EEEC sample families retained from the batch-testbed metadata; the pilot
+  # families (Llymp, baoyu) are excluded from the comparison.
+  core_families: [Ecan, Enorm, Lcan, Lnorm]
+  # EEEC label-free sub-cohorts, each with its tumour and normal families. The
+  # sub-cohorts are the two label-free batches of the crossed design.
+  subcohorts:
+    E:
+      tumour: [Ecan]
+      normal: [Enorm]
+    L:
+      tumour: [Lcan]
+      normal: [Lnorm]
+  # Families pooled into the single combined EEEC delta vector.
+  pooled_tumour_families: [Ecan, Lcan]
+  pooled_normal_families: [Enorm, Lnorm]
+  # Bootstrap resamples behind the Spearman confidence interval of a ladder pair.
+  n_bootstrap_ci: 2000
+  # Reduced bootstrap count for the same-cohort pair, whose interval is
+  # indicative only because the two platforms share the same samples.
+  n_bootstrap_reduced: 500
+  # Label permutations for the protein-pair network comparison.
+  n_permutation_network: 200
+  # Default permutation count of the permutation routine; every call in stage 08
+  # states its own count, so this value only documents the historical default.
+  n_permutation_default: 2000
+  # Quartile labels of the effect-size stratified concordance, weakest first.
+  effect_bin_labels: ["Q1 weakest", "Q2", "Q3", "Q4 strongest"]
+  # Minimum number of genes with complete profiles required before the PC1
+  # loading comparison of the two tumour matrices is reported.
+  min_pc1_genes: 50
+
+# --- Cross-implementation merge (stage 11) -----------------------------------
+
+cross_implementation:
+  # Token that marks domain A (the three-cohort CPTAC domain) in the benchmark
+  # domain labels; every other label is domain B.
+  domain_a_token: CPTAC
+  # Minimum number of shared (domain x layer subset x cohort pair) cells before
+  # the cross-side Spearman agreement is reported.
+  min_common_cells: 5
+
+# --- Purity diagnostics and purity-aware arms (stage 09) ----------------------
+# The purity gate asks whether correcting for tumour purity improves cross-cohort
+# transfer. Every arm reuses the benchmark protocol, so the counts that decide
+# which cohort pairs and genes enter the comparison live under `benchmark`.
+
+purity:
+  # Column-name fragments that nominate a purity or cell-composition column in
+  # the third-party tables. Those tables are annotated inconsistently, so
+  # candidates are located by name; a match only nominates a column for
+  # inspection and no value is ever derived from the name.
+  column_hints: [purit, absolute, tumor_cell, stromal, immune, leuki]
+  # The same, for the Excel metadata table of the CPTAC independent cohort, which
+  # does not record a leukocyte fraction.
+  column_hints_metadata: [purit, absolute, tumor_cell, stromal, immune]
+  # Minimum number of samples with a purity estimate for a layer to be diagnosed.
+  min_samples_diagnosed: 25
+  # Layers diagnosed for purity confounding by 09_02, in report order. Given as
+  # `layers` names; the artefact records the corresponding `layer_tags` token,
+  # because that token is the key a purity record shares with a benchmark record.
+  diagnostic_layers: [mRNA, CNA, protein, methylation, miRNA]
+  # Minimum number of samples with purity for the independent cohort to be usable
+  # as the learning cohort of the purity model.
+  min_samples_learned: 40
+  # Fraction of non-missing values a gene must reach to enter a purity model.
+  gene_completeness: 0.9
+  # |Pearson r| above which a gene counts as purity-associated.
+  abs_r_gene: 0.3
+  # Principal components used by the purity confounding diagnostic.
+  n_pc_diagnosis: 10
+  # Principal components used to build the purity-related subspace that the S
+  # arms remove.
+  n_pc_learning: 20
+  # Minimum genes an arm must retain after its gene selection to be applied.
+  min_arm_genes: 20
+  # Arms evaluated, in report order. `baseline` applies no purity handling and
+  # reproduces the frozen G2 baseline; `remove_<k>_purity_pcs` projects out the
+  # first k purity-related principal components; `mask_genes_abs_r_<gamma>`
+  # zeroes every gene whose |r| with purity reaches gamma; `residualise_purity`
+  # regresses each gene on purity. These strings are the arm vocabulary written
+  # to every stage-09 artefact, so a rename here renames the output.
+  arms:
+    - baseline
+    - remove_1_purity_pcs
+    - remove_2_purity_pcs
+    - remove_3_purity_pcs
+    - mask_genes_abs_r_0.2
+    - mask_genes_abs_r_0.3
+    - residualise_purity
+  # Arm that reproduces the frozen G2 baseline; the verdict is decided against it.
+  baseline_arm: baseline
+  # Compact English report labels of the arms above, used by the aggregation and
+  # the figures in place of the long vocabulary names. The codes B0/S1-S3/G20/G30/
+  # R1 are the arm codes of the pre-registration narrative and are kept so that a
+  # reported table can be read against that narrative; the label of an arm not
+  # listed here falls back to the arm name itself.
+  arm_labels:
+    baseline: "B0 baseline (no purity handling)"
+    remove_1_purity_pcs: "S1 remove 1 purity PC"
+    remove_2_purity_pcs: "S2 remove 2 purity PCs"
+    remove_3_purity_pcs: "S3 remove 3 purity PCs"
+    mask_genes_abs_r_0.2: "G20 purity-independent genes (gamma = 0.2)"
+    mask_genes_abs_r_0.3: "G30 purity-independent genes (gamma = 0.3)"
+    residualise_purity: "R1 per-gene purity residualisation"
+  # Cohort set and layer set of each evaluation domain, in concatenation order.
+  # Domain A is the three CPTAC cohorts, where the protein layer is measured on
+  # every sample; domain B is the TCGA/CPTAC endometrial set, which carries
+  # methylation and miRNA instead. Keys are the `cohorts` keys and the `layers`
+  # names; file names use `cohort_tags` and `layer_tags`.
+  domain_cohorts:
+    A: [independent, discovery, ov]
+    B: [tcga, independent, discovery]
+  domain_layers:
+    A: [mRNA, CNA, protein]
+    B: [mRNA, miRNA, CNA, methylation]
+
+# --- Decision-gate thresholds ------------------------------------------------
+# Frozen before the corresponding analysis was executed. The G2 threshold is
+# expressed as the relative improvement the design can resolve, derived from the
+# measured noise floor rather than assumed.
+
+gates:
+  g2:
+    # Frozen baseline transfer ARI that any new arm must reproduce.
+    baseline_ari: 0.4027
+    # Records available after degeneracy filtering.
+    n_records: 49
+    # Absolute target required to declare a +10% relative improvement.
+    target_ari: 0.5904
+    required_relative_gain: 0.466
+    # English fragment that identifies the frozen baseline arm in the Python
+    # benchmark matrix: the KMeans(concat) arm whose transfer ARI the threshold
+    # was derived from. The purity-aware baseline arm has to reproduce its
+    # records exactly. The fragment is matched case-insensitively against the
+    # `method` column of work("benchmark_matrix") by containment, so a bare
+    # method name and a decorated label both match.
+    baseline_method: kmeans
+    # English fragment identifying the decision-relevant challenger arm, the
+    # co-association consensus, whose paired difference against the baseline
+    # defines the decision-relevant noise scale. Matched the same way.
+    decision_relevant_method: coassociation
+    # Minimum paired records before an arm is compared with the baseline.
+    min_paired_records: 5
+    # Reproduction tolerances of the baseline check (09_08), which verifies that
+    # the purity-aware baseline arm reproduces the frozen benchmark records. A
+    # shared record whose two transfer ARIs differ by more than
+    # reproduction_tolerance is reported as not reproduced; a difference below
+    # reproduction_exact_tolerance counts as exact agreement. Both are reporting
+    # bounds of that check, not decision thresholds, and are far tighter than the
+    # rounding of the stored values.
+    reproduction_tolerance: 0.000001
+    reproduction_exact_tolerance: 0.000000001
+    # Maximum number of records a listing prints: the disagreeing records and the
+    # records only one side of the comparison holds.
+    max_listed_records: 8
+    # Minimum number of leave-out cohorts in a (domain x layer-subset) unit before
+    # the unit enters the champion-flip and replicability counts.
+    min_pairs_per_unit: 2
+    # Fraction of the leave-out cohorts of a unit in which a method must rank
+    # first to count as replicable; this is exactly two thirds.
+    replicability_win_fraction: 0.6666666666666666
+    # Original placeholder improvement, superseded by the derived threshold but
+    # still reported by the required-sample-size tables.
+    placeholder_relative_gain: 0.10
+    # Relative thresholds scanned when deriving the required sample size.
+    scenario_relative_thresholds: [0.05, 0.10, 0.15, 0.20, 0.30, 0.40]
+    # Narrower scan used once the noise scale had been reduced to the
+    # decision-relevant comparison.
+    refined_scenario_thresholds: [0.05, 0.10, 0.15, 0.20, 0.30]
+    # Evaluation-set sizes of the minimum-detectable-difference table.
+    evaluation_set_sizes: [22, 44, 66]
+    # True relative improvements simulated for the power curve.
+    power_simulation_gains: [0.0, 0.10, 0.145, 0.20, 0.30]
+    # Monte-Carlo draws of the max-of-k selection-bias estimate and of one
+    # power-curve point.
+    noise_simulations: 20000
+    power_simulations: 4000
+  g3:
+    # Maximum cluster fraction above which a within-cohort clustering is too
+    # degenerate to serve as a reproducibility ceiling.
+    ceiling_degeneracy_limit: 0.70
+    # Sample sizes available in the three cohorts after intersection.
+    cohort_sizes: [71, 41, 67]
+    # Cluster numbers compared when the ceiling is measured. The ceiling is
+    # reported as the lowest value over these K, so they are deliberately not the
+    # benchmark k_values: the question is whether any coarsening of the data
+    # reproduces itself, not which K the benchmark reports.
+    k_values: [2, 3, 4]
+    # Genes retained per layer by median absolute deviation before the layers are
+    # concatenated for a ceiling measurement.
+    top_mad_genes: 1000
+    # k-means restarts behind a full-sample fit and behind a resample fit.
+    kmeans_n_init: 20
+    kmeans_n_init_resample: 10
+    # Seed offset of the second fit of a split-half replicate. The two halves are
+    # clustered with different random initialisations on purpose: a shared
+    # initialisation would let the two partitions agree for a reason that has
+    # nothing to do with the data and the measured ceiling would be inflated.
+    second_fit_seed_offset: 1000
+    # Monte-Carlo effort of the ceiling measurements: split-half replicates of the
+    # within-cohort ceiling, random-labelling draws of the ARI null distribution,
+    # and bootstrap replicates of the whole-sample ceiling.
+    n_split_half: 200
+    n_null_draws: 3000
+    n_bootstrap: 200
+    # A bootstrap resample is used only when it retains at least k plus this many
+    # distinct samples; a smaller resample cannot fill k clusters and the
+    # replicates it would contribute would bias the whole-sample ceiling.
+    bootstrap_unique_margin: 2
+    # Minimum number of four-layer samples before a cohort is analysed at all,
+    # and before its split-half ceiling is measured.
+    min_samples_build: 20
+    min_samples_split_half: 30
+    # Largest-cluster fraction above which a cross-cohort transfer arm is
+    # reported as degenerate in the ceiling diagnostics. This is a reporting flag
+    # on the measured transfer, distinct from ceiling_degeneracy_limit, which is
+    # the pre-registered bound used to decide that no ceiling exists.
+    cross_degeneracy_fraction: 0.8
+
+# --- Alignment strategies evaluated under gate G4 ----------------------------
+
+alignment_strategies:
+  - none
+  - zscore
+  - quantile
+  - combat_pooled
+  - delta_reference
+
+# --- Method arms -------------------------------------------------------------
+
+methods:
+  python:
+    - kmeans
+    - nmf
+    - pca
+    - spectral
+    - coassociation
+    - snf
+    - mcca
+    - mofa
+  r:
+    - snftool
+    - mofa2
+    - iclusterplus
+    - mixomics
+    - intnmf
+    - mcia
+
+# --- Pre-registration documents ----------------------------------------------
+# The direction-F pre-registration plans live in the external workspace declared
+# as paths.data.preregistration_dir. Their titles are not ASCII, so a plan is
+# addressed by version label through paths.data.preregistration_pattern; a label
+# must resolve to exactly one file, which is enforced by 07_05.
+
+preregistration:
+  # Every version label of the pre-registration series, oldest first.
+  version_labels: [v0.1, v0.2, v0.3, v1.0]
+  # Filename pattern of a plan, resolved inside paths.data.preregistration_dir
+  # with {version} replaced by the label. The title of a plan is not ASCII, which
+  # is why the label and not the full name identifies the document.
+  file_pattern: "*{version}.md"
+  # Versions that carry the "superseded" banner.
+  superseded_versions: [v0.1, v0.2, v0.3]
+  # Frozen version that supersedes the earlier drafts and is authoritative.
+  frozen_version: v1.0
+  # Draft version that 09_12 reads and turns into frozen_version. Its text is
+  # edited by applying paths.data.preregistration_edits in order.
+  source_version: v0.3
+  # Banner inserted into a superseded plan, directly below its changelog
+  # paragraph. It is written in English because no CJK may appear in the source
+  # or the configuration; it states which plan is authoritative.
+  superseded_banner: "> [SUPERSEDED] This document has been superseded by the frozen pre-registration plan v1.0. v1.0 merges the F-32 to F-58 facts and freezes the G2 thresholds; v1.0 is authoritative and this file is kept for version history only."
+  # Substring that identifies a plan already carrying the banner (case-sensitive,
+  # matched anywhere in the document).
+  banner_marker: "superseded by the frozen pre-registration"
+  # ASCII status marker of an annotated, frozen plan: its status line carries
+  # this word. Replaces the non-ASCII status phrase of the original document,
+  # which may not appear in the source.
+  frozen_status_marker: "FROZEN"
+  # A changelog paragraph opens with this prefix; the banner is inserted between
+  # the changelog and the body, i.e. directly below that paragraph.
+  changelog_prefix: "> **v"
+
+# --- Protein-layer bridge (stage 02) ----------------------------------------
+# Settings of the tumour-minus-normal re-expression of the protein layer and of
+# its validation against the mRNA-protein anchor.
+
+protein_bridge:
+  # Tail fraction trimmed in the robustness diagnostic: a gene is kept only when
+  # both cohorts place its mean inside their own [q, 1-q] interval of the gene
+  # spectrum, so 0.05 removes the most extreme 10% of genes in total.
+  trim_quantile: 0.05
+  # Minimum number of shared genes for a comparison to be reported; a pair below
+  # the bound is logged as too sparse and excluded from the record files.
+  min_shared_genes: 100
+
+# --- Alignment-strategy evaluation (stage 03) --------------------------------
+# Settings of the transfer-ARI matrix over cohort pairs, layers and
+# standardisation arms.
+
+alignment:
+  # Genes retained per cohort by median absolute deviation, computed on the
+  # sample-centred matrices; the intersection of the two cohorts' sets is used.
+  top_mad_genes: 2000
+  # Minimum number of shared genes for a cohort pair to be evaluated at all.
+  min_shared_genes: 400
+  # Minimum number of high-variance genes left after intersecting the two sets.
+  min_hvar_genes: 100
+  # k-means restarts of the two clusterings that the transfer ARI compares.
+  kmeans_n_init: 20
+  # Absolute ARI change above which a pair counts as improved or worsened rather
+  # than unchanged in the direction summary.
+  ari_direction_tolerance: 0.01
+  # Layer token -> cohorts holding a harmonised matrix for that layer, in
+  # evaluation order. The tokens are those of the harmonised_matrix_pattern file
+  # names, not the display names used in `cohorts` and `layers`.
+  layer_cohorts:
+    mRNA: [TCGA, ind, dis, OV]
+    miRNA: [TCGA, ind, dis]
+    CNA: [TCGA, ind, dis, OV]
+    protein: [ind, dis, OV]
+    meth: [TCGA, ind, dis]
+  # Cohorts and layers that also have a normal-tissue matrix, stored under the
+  # second layer token given here; this enables the delta-reference arm.
+  normal_layers:
+    ind:
+      mRNA: mRNA_N
+      protein: protein_N
+    dis:
+      mRNA: mRNA_N
+      protein: protein_N
+    OV:
+      protein: protein_N
+  # Labels of the standardisation arms, in evaluation order. These strings are
+  # the stratum keys of work("alignment_ari") and work("alignment_ari_aggregate"),
+  # so stage 03 and every consumer of those artefacts read them from here.
+  strategies:
+    - S0_baseline
+    - S1_quantile
+    - S2_delta_reference
+    - S3_combat_pooled
+
+# --- Figure and table production ---------------------------------------------
+
+output:
+  # Figure geometry: width in millimetres, upper bound imposed by the target
+  # journal's two-column layout.
+  figure_width_mm: 180
+  # Minimum type size inside a figure, enforced by the geometry checker.
+  min_font_pt: 8.0
+  raster_dpi: 300
+  # Formats exported for every figure.
+  figure_formats: [png, pdf, eps, tif]
+
+  # Glob patterns, relative to results.figures_dir, that select the PNG rasters
+  # re-exported as LZW TIFF. Each pattern is sorted on its own and the list order
+  # is the reporting order: main figures first, then the supplement.
+  figure_png_globs: ["Fig[0-9]_*.png", "FigS*.png"]
+  # Figure-generation sources that must write EPS themselves with matplotlib
+  # (native vector output, Type 42 embedded fonts). Basenames as staged in
+  # paths.work.pdfbuild_dir. The legacy names map to the standardised layout as:
+  #   r3_fig12.py  -> src/12_figures/12_02_build_figure_1_and_2.py
+  #   r7_fig3.py   -> src/12_figures/12_03_build_figure_3.py
+  #   r11_fig45.py -> src/12_figures/12_04_build_figure_4_and_5.py
+  #   figstyle.py  -> src/common/plotting_style.py
+  figure_sources:
+    - 12_02_build_figure_1_and_2.py
+    - 12_03_build_figure_3.py
+    - 12_04_build_figure_4_and_5.py
+    - plotting_style.py
+
+# --- Cohort and layer identifier tags ----------------------------------------
+# The short tags carried by the harmonised per-cohort layer matrices, which are
+# also the keys used in the benchmark records. They are deliberately separate
+# from the display names under `cohorts` above: the derived matrices are keyed by
+# these tags, so changing one would point the code at a different file.
+
+cohort_tags:
+  # TCGA reference cohort tag.
+  tcga: TCGA
+  # CPTAC-UCEC external cohort tags. `ind` is the confirmatory (independent)
+  # cohort and `dis` the discovery cohort: verified against the harmonised
+  # matrices, whose sample identifiers are the Case_id values of the independent
+  # metadata table for `ind` and the Proteomics_Participant_ID values of the
+  # discovery clinical table for `dis`. Swapping the two would point the code at
+  # the wrong cohort's files.
+  independent: ind
+  discovery: dis
+  # CPTAC ovarian cohort tag.
+  ov: OV
+
+layer_tags:
+  mRNA: mRNA
+  miRNA: miRNA
+  CNA: CNA
+  # Methylation is abbreviated in the harmonised file names.
+  methylation: meth
+  protein: protein
+
+# --- Benchmark evaluation gates ----------------------------------------------
+# Thresholds that decide which (cohort pair x layer subset x method) records are
+# computed at all. Frozen with the rest of the pre-registration.
+
+benchmark:
+  # Separator used inside a cohort-pair label, written into every benchmark
+  # record as "<cohort A><pair_separator><cohort B>", e.g. "ind×dis".
+  #
+  # This is a DATA value, not a formatting choice. Downstream stages split the
+  # label on this character to recover the two cohorts, so changing it silently
+  # breaks those joins and makes previously published artefacts incompatible.
+  # U+00D7 is a mathematical operator rather than a word, so it does not
+  # conflict with the English-only rule; it is also already used in the
+  # published figures and tables ("cohort × layer matrix").
+  pair_separator: "\u00d7"
+  # ASCII stand-in substituted for pair_separator when a cohort-pair label is
+  # normalised before two record files are joined: U+00D7 is a typographic
+  # separator, and normalising it away keeps the composite joining key plain
+  # ASCII. Like pair_separator it is a data value, because both sides of the join
+  # must substitute the same string.
+  pair_separator_ascii: "x"
+  # Separator used inside a layer-subset label, written into every benchmark and
+  # purity record as "<layer><subset_separator><layer>", e.g. "mRNA+CNA". This is
+  # a data value for the same reason as pair_separator: a consumer splits the
+  # label on it to count the layers of a subset, so changing it breaks the join.
+  subset_separator: "+"
+  # Separator of the composite evaluation-unit key
+  # "<domain><record_key_separator><layer subset><record_key_separator><cohort
+  # pair>" on which a consumer joins two record files, e.g. "CPTAC_3cohort|mRNA+CNA|indxdis".
+  record_key_separator: "|"
+  # Minimum number of genes the two cohorts must share on a layer for that layer
+  # to enter the comparison; below it the cohort pair is dropped.
+  min_common_genes: 100
+  # Minimum number of common top-MAD genes retained per layer; below it the first
+  # `features.top_mad_genes` genes are used instead.
+  min_common_mad_genes: 50
+  # Minimum number of samples a matrix must have to be evaluated (Python side).
+  min_samples: 15
+  # Minimum sample count for the resample-based PAC stability statistic, which
+  # needs more samples than a deterministic evaluation.
+  min_samples_pac: 40
+  # Minimum number of samples required on the R side, which uses a stricter
+  # completeness rule than the Python side.
+  min_samples_r: 40
+  # Python method arm whose layer-count curve is reported as the fixed best
+  # performer in the summary tables. Must match a key of the method dictionary.
+  best_python_method: "3_KMeans(concat)"
+  # Feature cap applied per layer before the MOFA2 fit on the R side. A cost
+  # control, recorded as a deviation from the default training settings.
+  r_mofa_feature_cap: 400
+
+# --- R-side dependencies ------------------------------------------------------
+# Repositories and package groups used by 05_01_install_r_dependencies.R.
+
+r_repositories:
+  # CRAN mirror used for the installer and placed at the head of the
+  # Bioconductor repository list.
+  cran: https://mirrors.tuna.tsinghua.edu.cn/CRAN/
+  # Bioconductor release repository.
+  bioconductor: https://bioconductor.org
+  # Roots of the CRAN Archive trees searched for a package CRAN has archived.
+  # The package name is appended to each root.
+  archive_roots:
+    - https://cran.r-project.org/src/contrib/Archive
+    - https://mirrors.tuna.tsinghua.edu.cn/CRAN/src/contrib/Archive
+    - https://packagemanager.posit.co/cran/latest/src/contrib/Archive
+
+r_dependencies:
+  # R integration packages benchmarked on the R side, grouped by the repository
+  # they are installed from. `archive` packages are built from the CRAN Archive
+  # source tarball; `preinstalled` packages are verified but never installed here
+  # because their build is heavy.
+  bioc:
+    - MCIA
+    - mixOmics
+    - iClusterPlus
+    - MOFA2
+  archive:
+    - intNMF
+  preinstalled:
+    - SNFtool
+  # Packages that must be visible for the R benchmark to run; the others have
+  # documented equivalent implementations as fallbacks.
+  required:
+    - SNFtool
+    - mixOmics
+    - iClusterPlus
+    - MOFA2
+
+# --- Verification expectations (stages 13 and 14) ----------------------------
+# Frozen values of the released analysis. The table and figure verification
+# scripts compare an artefact against a value in this section; a failure means
+# either the artefact changed or the manuscript no longer matches the released
+# result. Nothing here changes what the analysis computes, only what a check
+# asserts, so this section may be re-frozen without re-running the pipeline.
+
+verification:
+  # PAC bin edges used to relate clustering stability to cross-cohort transfer.
+  # The same edges appear in the PAC-to-transfer table (13_01), in the number
+  # extraction (14_02) and in the PAC panel of Figure 3.
+  pac_bin_edges: [0.0, 0.30, 0.45, 0.60, 1.01]
+
+  # Sample counts behind the two sample-intersection reductions the manuscript
+  # reports, as {label, before, after, stated_percent}. The number verification
+  # (14_03) recomputes the reduction from the counts and prints it next to the
+  # percentage the text states; the stated percentage is negative because the
+  # intersection shrinks the cohort.
+  core_set_reductions:
+    - {label: TCGA, before: 539, after: 390, stated_percent: -27.6}
+    - {label: ind, before: 138, after: 84, stated_percent: -39.1}
+
+  # Largest absolute value of a cross-platform artefact number that the
+  # extended number verification (14_04) compares with the manuscript. Values
+  # above it are counts, sample sizes or network pair counts, which that check
+  # does not cover; without the bound the platform artefact would add hundreds
+  # of unquotable integers to the report.
+  platform_value_abs_max: 1.001
+
+  # Journal figure widths in millimetres, keyed by the label used to report the
+  # nearest specification. "double 180mm" must equal output.figure_width_mm.
+  journal_widths_mm:
+    "single 88mm": 88
+    "1.5-col 120mm": 120
+    "double 180mm": 180
+
+  # Printed values that the table-document checks sample, as [value, meaning].
+  table_pdf_values:
+    - ["0.3947", "KMeans overall"]
+    - ["0.0118", "SNF overall"]
+    - ["0.2081", "SNF R-side"]
+    - ["0.2890", "PAC<0.30 bin"]
+    - ["0.5000", "limma centroid"]
+    - ["0.5217", "Harmony"]
+    - ["0.8473", "cross-platform Δ"]
+    - ["0.2968", "network"]
+    - ["306", "core set"]
+    - ["479", "G2 required n"]
+
+  # Sampled table cells, as [file, row key of the first column, column name,
+  # expected value].
+  table_value_checks:
+    - {file: T3_python_method_ranking.csv, key: KMeans, column: overall_ARI, expected: 0.3947}
+    - {file: T3_python_method_ranking.csv, key: SNF, column: overall_ARI, expected: 0.0118}
+    - {file: T4_R_package_ranking.csv, key: SNF, column: mean_ARI, expected: 0.2081}
+    - {file: T5b_pac_bins_to_ARI.csv, key: "[0.0, 0.3)", column: mean_transfer_ARI, expected: 0.2890}
+
+  # Boundary tokens that Figures 1 to 3 must contain. The third token starts
+  # with a Unicode minus, which is what the mathtext renderer emits.
+  figure_1_3_tokens: ["0.6", "0.8", "\u22120.066", "0.412", "0.895", "0.208", "0.0118"]
+
+  # File-name stems of the figures those tokens belong to. 14_07 opens each one
+  # as <results(figures_dir)>/<stem>.pdf, so the stems are listed here rather
+  # than written into the checker.
+  figure_1_3_stems:
+    - Fig1_availability_comparability
+    - Fig2_layer_negative_marginal
+    - Fig3_method_not_resolvable
+
+  # Additional values Figure 3 is expected to show.
+  figure_3_extra_tokens: ["0.418", "50"]
+
+  # Values Figure 5 is expected to show, and the evaluation-record count quoted
+  # in its annotation.
+  figure_5_values: ["0.0643", "0.0975", "0.2795", "0.3146"]
+  figure_5_available_records: "22"
+
+  # Values the submission-compliance check reads back out of the manuscript
+  # text, as [label, value]; the artefact side is derived at run time.
+  compliance_text_values:
+    - {label: "T3 KMeans overall", value: "0.3947"}
+    - {label: "T4 SNF mean", value: "0.2081"}
+    - {label: "T6 limma centroid", value: "0.5"}
+    - {label: "T7a cross-platform rho", value: "0.8473"}
+
+  # Glob, relative to results.figures_dir, that selects the figure PDFs whose
+  # width, height and raster resolution 14_10 measures. The PNG sibling of a
+  # match is read as well, because the effective resolution is derived from its
+  # pixel count and the physical width of the page.
+  figure_pdf_glob: "Fig*_*.pdf"
+
+  # The same, for the EPS figures that 14_11 audits for genuine vector output.
+  eps_figure_glob: "Fig*.eps"
+
+  # Figures whose panels embed an imshow heatmap and therefore legitimately carry
+  # a raster image inside the EPS body. 14_11 reports an image operator on any
+  # other figure as a defect, because there the converter would have rasterised
+  # vector artwork.
+  eps_raster_figures: [Fig1, Fig2, Fig3, Fig5, FigS1, FigS3, FigS6]
+
+  # Number of NUL bytes below which the EPS body of a figure counts as text-only,
+  # i.e. as vector output carrying no embedded image stream.
+  eps_null_byte_limit: 50
+
+  # Distance in points below which a text block of a figure PDF counts as
+  # touching a page edge in the geometry pass of 14_09. It absorbs the rounding
+  # of the page box rather than defining a margin.
+  page_edge_tolerance_pt: 1.0
+
+# --- NSMP cohorts of the gate-G3 comparison (stage 10) -----------------------
+# Gate G3 compares the copy-number-low (NSMP) subtype across three cohorts and
+# fixes the decision threshold from the reproducibility those cohorts turn out
+# to support. This section holds the vocabulary that identifies those cohorts:
+# the file-name tags of their harmonised matrices, and the source of their NSMP
+# annotation. The Monte-Carlo effort behind the measurement lives under gates.g3.
+
+nsmp:
+  # Keys of the frozen NSMP catalogue work("core_nsmp_samples"): the whole core
+  # set and the NSMP (copy-number low) subset of it.
+  catalogue_core_key: core
+  catalogue_nsmp_key: nsmp_core
+
+  # Length of the participant barcode used when a cohort's harmonised matrices
+  # carry full barcodes but its NSMP list carries shorter identifiers.
+  barcode_prefix_length: 12
+
+  # The three cohorts of the comparison, keyed by the label used in console
+  # output and in work("g3_power"). `cohort_tag` indexes cohort_tags, i.e. the
+  # tag carried by the cohort's harmonised matrices; `nsmp_source` is
+  # "catalogue" when the NSMP list is read from the frozen catalogue and
+  # "metadata_table" when it is a column of the metadata table named by
+  # `metadata_file` (a paths.data key) filtered on subtype_column == nsmp_value;
+  # `match_barcode_prefix` matches identifiers on barcode_prefix_length
+  # characters instead of exactly.
+  cohorts:
+    TCGA:
+      cohort_tag: tcga
+      nsmp_source: catalogue
+      match_barcode_prefix: true
+    V1:
+      cohort_tag: independent
+      nsmp_source: metadata_table
+      metadata_file: cptac_independent_metadata
+      participant_column: Case_id
+      subtype_column: Genomic_subtype
+      nsmp_value: CNV_L
+      match_barcode_prefix: false
+    V2:
+      cohort_tag: discovery
+      nsmp_source: metadata_table
+      metadata_file: cptac_discovery_clinical
+      participant_column: Proteomics_Participant_ID
+      subtype_column: CNV_class
+      nsmp_value: CNV_LOW
+      match_barcode_prefix: false
+
+  # Columns of the confirmatory-cohort metadata table that the subtype inventory
+  # (10_01) reports, and the value counts shown for each of them.
+  independent_report_columns: [Genomic_subtype, CNV_status, MSI_status, POLE, Histologic_Type]
+  value_counts_limit: 6
+  # Same, for the pan-cancer subtype table.
+  subtype_table_value_limit: 8
+  # Column-name fragments that nominate a molecular-subtype column, matched in
+  # lower case. One list per metadata source, kept apart because the sources name
+  # their fields differently.
+  discovery_subtype_column_hints: [subtype, cnv, msi, pms, pole, molecul]
+  tcga_subtype_column_hints: [subtype, cnv, msi, integrated, molecul]
+  # Column of the Xena TCGA-UCEC clinical matrix that holds the sample barcode.
+  tcga_sample_id_column: sampleID
+
+# --- Report documents of the document package (stage 10) ---------------------
+# The document scripts render the project's report documents with pandoc and then
+# check each built PDF against its Markdown source. The documents belong to the
+# direction-F workspace declared as paths.data.report_output_dir and are written
+# in Chinese, which is why they are kept outside the repository and addressed
+# through the document manifest declared as paths.data.report_documents_manifest.
+# The manifest -- not this file -- carries the document titles, the subset that
+# the standalone verification pass re-checks, and the identifier tokens each
+# document must still contain after rendering: that is data, and it lives in a
+# data file. Only the rendering settings, which are parameters, are kept here.
+
+reports:
+  # pandoc invocation used for every document. The engine is XeLaTeX because the
+  # documents carry CJK text, and the geometry is the page setup of the reports.
+  pdf_engine: xelatex
+  page_geometry: "top=2.2cm,bottom=2.2cm,left=2.0cm,right=2.0cm"
+  font_size: 10pt
+  toc_depth: 2
+  # Minimum length of a whitespace-free identifier token that the verification
+  # re-extracts from a Markdown source.
+  token_min_length: 14
+  # Length above which a token that cannot be broken at a "/" risks being clipped
+  # by the typesetter; such a token must sit in a code block.
+  unbreakable_token_length: 73
+  # Span of the strikethrough regular expression used to detect "~~...~~"
+  # deletions; the "soul" LaTeX package that renders them fails on CJK content.
+  strikethrough_max_span: 80
+  # Extension of the Markdown sources and of the PDFs built from them. A staged
+  # copy of a source is named after the document key of the manifest.
+  markdown_extension: .md
+  pdf_extension: .pdf
+  # Marker that opens and closes a fenced code block in a Markdown source. A long
+  # identifier token inside a fence is typeset on its own line and cannot be
+  # broken, so the build guard treats it as safe.
+  code_fence: "```"
+
+  # Emoji-to-symbol substitutions applied to every Markdown source before it is
+  # rendered. The report sources carry emoji status marks (check mark, warning
+  # sign, red and yellow circles, ...) as a visual shorthand; the fonts used here
+  # have no emoji glyph, so pandoc would log "no <glyph> (U+XXXX)" for each of
+  # them and the printed page would show a box. Each emoji is therefore replaced
+  # by the plain symbol of the same meaning that the fonts do carry. This is a
+  # rendering setting, not document content, which is why it lives here and not
+  # in the document manifest.
+  #
+  # The pairs are applied in the declared order, and the order matters: the
+  # variation selector U+FE0F is stripped first, so that the emoji it follows is
+  # then matched on its own. Every non-ASCII character is written as a \uXXXX
+  # escape, as everywhere else in config/, so this file carries no CJK.
+  symbol_replacements:
+    - ["\ufe0f", ""]             # variation selector -> removed entirely
+    - ["\u26a0", "\u25b2"]       # warning sign -> black up-pointing triangle
+    - ["\u274c", "\u00d7"]       # cross mark -> multiplication sign
+    - ["\u2705", "\u221a"]       # white heavy check mark -> square root
+    - ["\u23f3", "\u2026"]       # hourglass with flowing sand -> horizontal ellipsis
+    - ["\U0001f4cc", "\u2591"]   # pushpin -> light shade
+    - ["\u25d0", "\u25cb"]       # circle with left half black -> white circle
+    - ["\u2b50", "\u2605"]       # white medium star -> black star
+    - ["\U0001f6a9", "\u2691"]   # triangular flag on post -> black flag
+    - ["\u2b07", "\u2193"]       # downwards black arrow -> downwards arrow
+    - ["\U0001f7e1", "\u25cf"]   # yellow circle -> black circle
+    - ["\U0001f534", "\u25cf"]   # red circle -> black circle

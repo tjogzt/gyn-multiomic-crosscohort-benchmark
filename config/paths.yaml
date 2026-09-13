@@ -1,0 +1,351 @@
+# =============================================================================
+# paths.yaml -- every filesystem location used by the project.
+#
+# No module may hard-code a directory or filename. Business logic must obtain
+# locations through src/common/config.py, which resolves this file and exposes
+# the entries as dynamic variables.
+#
+# Resolution rules
+#   ${var}            expands another entry in this file
+#   ${env:NAME}       expands environment variable NAME (error if unset)
+#   ${env:NAME:-def}  expands NAME, falling back to "def"
+#   Any entry may be overridden by an environment variable of the same name in
+#   upper case with dots replaced by underscores, e.g. GYN_DATA_ROOT overrides
+#   data_root (see src/common/config.py, ENV_PREFIX).
+# =============================================================================
+
+# --- Root locations ----------------------------------------------------------
+
+# Root of the external data volume that holds all third-party inputs.
+data_root: /Volumes/tjogzt4T/data
+
+# Root for all intermediate and derived artefacts. Defaults to <project>/.work
+# and is intentionally outside version control; redirect it with GYN_WORK_ROOT.
+work_root: ${env:GYN_WORK_ROOT:-${project_root}/.work}
+
+# Root for all published deliverables (figures, tables, machine-readable data).
+results_root: ${project_root}/results
+
+# Root that holds the LaTeX sources of the manuscript.
+manuscript_root: ${project_root}/manuscript
+
+# --- Third-party data sources ------------------------------------------------
+
+data:
+  # TCGA / Xena matrices: UCEC cohort assets and the pan-cancer assets used to
+  # derive UCEC clinical and molecular annotation.
+  xena_dir: ${data_root}/xena
+  xena_ucec_dir: ${xena_dir}/UCEC
+  xena_pancan_dir: ${xena_dir}/tcgapancan
+
+  # CPTAC proteogenomic cohorts.
+  cptac_dir: ${data_root}/cptac
+  cptac_discovery_dir: ${cptac_dir}/CPTAC_UCEC_Discovery_LinkedOmics
+  cptac_independent_dir: ${cptac_dir}/CPTAC_UCEC_independent_LinkedOmics
+  cptac_ov_dir: ${cptac_dir}/CPTAC_OV_Prospective_LinkedOmics
+
+  # LinkedOmics gene-level TMT matrices of the CPTAC-UCEC discovery cohort. The
+  # two files are the normal and the tumour arm of one matrix; the
+  # tumour-minus-normal difference derived from them is the discovery-cohort
+  # delta vector of the cross-platform comparison.
+  cptac_discovery_proteomics_normal: ${cptac_discovery_dir}/HS_CPTAC_UCEC_Proteomics_TMT_gene_level_Normal.cct
+  cptac_discovery_proteomics_tumor: ${cptac_discovery_dir}/HS_CPTAC_UCEC_Proteomics_TMT_gene_level_Tumor.cct
+
+  # Median-polished log2 tumour/normal protein ratio matrix of the CPTAC-UCEC
+  # confirmatory cohort. Read only to document why that cohort cannot enter the
+  # cross-platform ladder: median polishing removes the very tumour/normal
+  # contrast the ladder needs.
+  cptac_confirmatory_proteomics_ratio: ${cptac_independent_dir}/UCEC_confirmatory_proteomics_ratio_median_polishing_log2_tumor_normal_v3.0.cct
+
+  # PRIDE archive of the early-onset endometrioid endometrial carcinoma (EEEC)
+  # cohort. Only these flat files are read; the 684.8 GB RAW archive is never
+  # downloaded in full.
+  pride_dir: ${data_root}/pride/PXD046507
+  eeec_protein_groups: ${pride_dir}/combined__txt__proteinGroups.txt
+  eeec_sample_metadata: ${pride_dir}/combined__txt__sampleMetadata.txt
+
+  # TCGA-UCEC clinical matrix and the pan-cancer molecular-subtype table, both
+  # taken from Xena; together they carry the TCGA-side subtype annotation. The
+  # CPTAC-side annotation tables are declared with the other LinkedOmics exports
+  # below (cptac_independent_metadata, cptac_discovery_clinical).
+  xena_ucec_clinical_matrix: ${xena_ucec_dir}/TCGA.UCEC.sampleMap_UCEC_clinicalMatrix
+  xena_pancan_subtypes: ${xena_pancan_dir}/TCGASubtype.20170308.tsv.gz
+
+  # Directory holding the project's report documents: the Markdown sources and
+  # the PDFs the document scripts of stage 10 build from them. Those documents
+  # belong to the direction-F workspace and are written in Chinese, which is why
+  # they are kept outside the repository; the entry therefore names the same
+  # workspace as preregistration_dir, explicitly, for the document scripts.
+  report_output_dir: ${preregistration_dir}
+
+  # Data file of the document package: the titles of the report documents, the
+  # subset re-checked by the standalone verification pass, and the identifier
+  # tokens each document must retain after rendering. It is data, not code and
+  # not a parameter, because the titles are the exact file names on disk; see
+  # docs/report_documents.md for what it contains and why the titles are stored
+  # escaped.
+  report_documents_manifest: ${project_root}/report_documents.json
+
+  # Data file of the reference-verification checks of stage 14 (14_05, 14_06):
+  # the heading that opens the manuscript reference list, the pattern that
+  # captures a DOI in it, and the bibliographic records confirmed by hand. It is
+  # data, not a parameter, because the heading and the pattern are written in the
+  # manuscript's own script and must match its text exactly; it sits in config/
+  # so that src/ stays ASCII, the same reason as report_documents_manifest above.
+  reference_check_manifest: ${project_root}/config/reference_check.yaml
+
+  # Gene-level matrices of the LinkedOmics export of each CPTAC cohort. The .cct
+  # files are tab-separated with a leading comment block; the Independent cohort
+  # proteomics file is already a tumour/normal log2 ratio, and its sample
+  # grouping lives in the metadata workbook.
+  cptac_discovery_prot_tumor: ${cptac_discovery_dir}/HS_CPTAC_UCEC_Proteomics_TMT_gene_level_Tumor.cct
+  cptac_discovery_prot_normal: ${cptac_discovery_dir}/HS_CPTAC_UCEC_Proteomics_TMT_gene_level_Normal.cct
+  cptac_discovery_rna_tumor: ${cptac_discovery_dir}/HS_CPTAC_UCEC_RNAseq_RSEM_UQ_log2_Tumor.cct
+  cptac_discovery_rna_normal: ${cptac_discovery_dir}/HS_CPTAC_UCEC_RNAseq_RSEM_UQ_log2_Normal.cct
+  cptac_discovery_methylation: ${cptac_discovery_dir}/HS_CPTAC_UCEC_Methylation_betaValue_gene_level_mean.cct
+  cptac_independent_prot_ratio: ${cptac_independent_dir}/UCEC_confirmatory_proteomics_ratio_median_polishing_log2_tumor_normal_v3.0.cct
+  cptac_independent_rna: ${cptac_independent_dir}/UCEC_confirmatory_RNAseq_gene_RSEM_removed_circRNA_UQ_log2(x+1)_tumor_normal_v3.0.cct
+  cptac_independent_methylation: ${cptac_independent_dir}/UCEC_confirmatory_methylation_gene_level_beta_value_tumor_v3.0.cct
+
+  # Ovarian cohort: proteomics tumour and normal arms and RNA-seq. No normal
+  # RNA-seq exists for this cohort.
+  cptac_ov_prot_tumor: ${cptac_ov_dir}/HS_CPTAC_OV_proteome_gene_tumor.cct
+  cptac_ov_prot_normal: ${cptac_ov_dir}/HS_CPTAC_OV_proteome_gene_normal.cct
+  cptac_ov_rna: ${cptac_ov_dir}/HS_CPTAC_OV_rnaseq_fpkm_log2.cct
+
+  # Xena assets used by the protein bridge: the pan-cancer EB++-adjusted RNA-seq
+  # matrix that supplies the TCGA arm, the Illumina 450K probe-to-gene map and
+  # the probe-level UCEC 450K beta matrix.
+  xena_pancan_rnaseq_eb_adjusted: ${xena_pancan_dir}/EB++AdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.xena.gz
+  xena_methylation_probe_map: ${xena_pancan_dir}/illuminaMethyl450_hg19_GPL16304_TCGAlegacy
+  xena_ucec_methylation_450k: ${xena_ucec_dir}/TCGA.UCEC.sampleMap_HumanMethylation450.gz
+
+  # Remaining Xena assets of the TCGA-UCEC cohort: the miRNA, RPPA and GISTIC
+  # thresholded CNA matrices, whose sample columns define the per-layer sample
+  # universe of the availability figure (12_09), and the survival export read for
+  # the same figure. The columns of each matrix are read from the header only; the
+  # matrices themselves are tens to hundreds of megabytes and never opened in full.
+  xena_ucec_mirna: ${xena_ucec_dir}/TCGA.UCEC.sampleMap_miRNA_HiSeq_gene.gz
+  xena_ucec_rppa: ${xena_ucec_dir}/TCGA.UCEC.sampleMap_RPPA.gz
+  xena_ucec_cna_gistic: ${xena_ucec_dir}/TCGA.UCEC.sampleMap_Gistic2_CopyNumber_Gistic2_all_thresholded.by_genes.gz
+  xena_ucec_survival: ${xena_ucec_dir}/survival_UCEC_survival.txt
+
+  # CPTAC clinical annotation tables that carry the purity estimates used by the
+  # purity gate (stage 09). The two UCEC cohorts publish purity in different
+  # columns of different file formats, which is why each is a separate entry.
+  # cptac_discovery_clinical is declared with the other discovery assets above.
+  cptac_ov_clinical: ${cptac_ov_dir}/HS_CPTAC_OV_CLI.txt
+  # The two consumers of the purity tables were written against these names, so
+  # they are declared under both the short and the full spelling to keep the
+  # producer and consumer sides of the gate in step.
+  cptac_discovery_clinical: ${cptac_discovery_dir}/HS_CPTAC_UCEC_CLI.txt
+  cptac_independent_meta: ${cptac_independent_dir}/UCEC_confirmatory_meta_table_v3.0.xlsx
+  cptac_independent_metadata: ${cptac_independent_dir}/UCEC_confirmatory_meta_table_v3.0.xlsx
+
+  # External workspace of the direction-F study that produced this replication
+  # package. It holds the Chinese pre-registration plans, whose titles are not
+  # ASCII, so a document is addressed by version label through the
+  # preregistration file pattern in params.yaml. The directory is outside the
+  # repository because the plans are typeset in Chinese and do not follow
+  # docs/coding_standard.md §1.
+  preregistration_dir: ${env:GYN_PREREGISTRATION_DIR:-${project_root}/../retyping}
+  # Sidecar holding the document edits that turn the draft plan into the frozen
+  # one: the anchor texts and their replacements, verbatim. The texts are Chinese
+  # because the plan is, so the file sits next to the plan rather than in the
+  # repository, whose files must be ASCII (docs/coding_standard.md §1).
+  preregistration_edits: ${preregistration_dir}/preregistration_v1.0_edits.yaml
+
+# --- Intermediate artefacts -------------------------------------------------
+# Keys are referenced from code as work("key"); the value is a path relative to
+# work_root. Directory keys end with a slash.
+
+work:
+  harmonised_dir: harmonised/
+  hcsv_dir: hcsv/
+  eeec_batch_dir: eeec_batch/
+  platform_dir: platform/
+  purity_dir: purity/
+  pai_dir: pai/
+  pdfbuild_dir: pdfbuild/
+
+  # XeLaTeX preamble applied by every pandoc PDF build of the report documents:
+  # CJK fonts, the symbol fonts that replace the emoji of the Markdown sources,
+  # and the running head. It is staged at the root of the work directory.
+  pdfbuild_header_tex: head.tex
+
+  # Harmonised per-cohort layer matrices (hcsv_dir/<cohort>__<layer>.csv.gz).
+  tcga_methylation_genelevel: tcga450k_genelevel_ucec.csv.gz
+  eeec_proteome_matrix: eeec_proteome_log2.pkl
+
+  # EEEC batch-testbed artefacts written by stage 07 and reused by the
+  # cross-platform comparison of stage 08.
+  eeec_batch_matrix: eeec_batch/matrix_log2.csv
+  eeec_batch_sample_meta: eeec_batch/sample_meta.csv
+  eeec_protein_gene_map: eeec_batch/protein_gene.csv
+
+  # Cross-platform comparison artefacts (stage 08): the comparability ladder,
+  # the delta vectors it operates on, the effect-size strata, the network
+  # agreement and the combined results file.
+  platform_ladder_csv: platform/platform_ladder.csv
+  platform_ladder_json: platform/platform_ladder.json
+  platform_delta_vectors: platform/delta_vectors.csv
+  platform_ladder_v2_csv: platform/platform_ladder_v2.csv
+  platform_effect_bins: platform/effect_bins.csv
+  platform_results_json: platform/platform_results.json
+  # Same file under the shorter name the figure scripts use.
+  platform_results: platform/platform_results.json
+
+  # Cross-implementation merge artefact (stage 11): the Python and R method
+  # rankings side by side with their cross-side agreement.
+  benchmark_merged: bench_merged.json
+
+  # Stage artefacts, one file per analysis stage.
+  alignment_stage1: align_stage1.json
+  alignment_ids: align_ids.json
+  alignment_probe_map: align_probe_map.json
+  alignment_domains: align_domains.json
+  alignment_concordance: align_concordance.json
+  alignment_duplicates: align_dups.json
+  protein_bridge_diagnostics: bridge_diag.json
+  protein_bridge_three_cohort: bridge_3cohort.json
+  protein_bridge_anchors: b3_anchors.json
+  alignment_ari: ari_matrix.json
+  alignment_ari_aggregate: ari_agg.json
+  benchmark_matrix: bench_matrix.json
+  benchmark_availability: bench_availability.json
+  benchmark_summary: bench_summary.json
+  benchmark_r_matrix: bench_r_matrix.csv
+  pac_matrix: pac_matrix.json
+  pac_aggregate: pac_agg.json
+  g2_refined: g2_refined.json
+  pai_matrix: pai/pai_matrix.json
+
+  # G3 thresholds, noise floor and within-cohort reproducibility ceiling
+  # (stage 10).
+  g3_power: g3_power.json
+
+  # Sample sets of the frozen document package (stage 10). core_nsmp_samples is
+  # the frozen NSMP catalogue that 10_02..10_05 read; nsmp_sets is the four-layer
+  # intersection it derives for the three cohorts of the comparison.
+  core5_samples: ucec_core5.json
+  core_nsmp_samples: ucec_core_nsmp.json
+  nsmp_sets: nsmp_sets.json
+
+  # Summary written by the availability figure (12_09) of the TCGA-UCEC cohort:
+  # the per-layer sample counts, the leave-one-layer-out table and the survival
+  # summary the figure panels are read for.
+  s7_final: s7_final.json
+
+  # Fallback cross-platform results name written by an earlier revision of
+  # stage 08; the live file is platform_results_json above.
+  platform_results_alt: platform/results.json
+
+  # Purity diagnostics measured inside the batch testbed, used as a fallback by
+  # the evidence ledger of stage 14.
+  eeec_batch_purity_diag: eeec_batch/purity_diag.json
+
+  # Aggregated purity-aware arms (stage 09); the fallback name pai_matrix is
+  # declared above.
+  pai_aggregate: pai/pai_agg.json
+
+  # Reference-verification records of the discussion (stage 14).
+  disc_refs: disc_refs.json
+  disc_refs_second: disc_refs2.json
+  disc_refs_third: disc_refs3.json
+  disc_verify: disc_verify.json
+
+  # Purity diagnostics and purity-aware integration outputs (stage 09). The
+  # directory keys purity_dir and pai_dir hold everything else written here.
+  purity_diag_csv: purity/purity_diag.csv
+  purity_diag_json: purity/purity_diag.json
+  pai_learn_summary: pai/learn_summary.json
+  pai_compare_csv: pai/pai_compare.csv
+  pai_results: pai/pai_results.json
+
+  # Decision-gate artefacts derived from the measured noise floor (stage 09).
+  # Written in dependency order: g2_threshold (09_09) -> g2_final (09_10) ->
+  # g2_refined (09_11) -> the G2 verdict (09_07).
+  g2_threshold: g2_threshold.json
+  g2_champ_flip: g2_champ_flip.csv
+  g2_required_n: g2_required_n.csv
+  g2_final: g2_final.json
+  g2_replicability: g2_replicability.csv
+
+  # Per-domain benchmark outputs, written as bench_best_<A|B>.json and
+  # bench_table_<A|B>.json.
+  benchmark_best_pattern: bench_best_{domain}.json
+  benchmark_table_pattern: bench_table_{domain}.json
+  # Domain B is also addressed by its literal name, because the figure scripts
+  # read that one table directly rather than iterating the pattern.
+  benchmark_table_b: bench_table_B.json
+  # Domain A addressed by its literal name for the same reason: the number
+  # extraction of stage 14 reports both per-domain tables by file name.
+  benchmark_table_a: bench_table_A.json
+
+  # Per-cohort per-layer harmonised matrix pattern.
+  harmonised_matrix_pattern: hcsv/{cohort}__{layer}.csv.gz
+
+  # Per-cohort per-layer harmonised matrices as written by the harmonisation
+  # stage itself, before the downstream CSV cache is generated.
+  harmonised_pickle_pattern: harmonised/{cohort}__{layer}.pkl
+
+  # Throw-away cache of the pan-cancer column subset; {name} is the source file
+  # name. Deleted at the end of the harmonisation run.
+  harmonised_tmp_pattern: harmonised/_tmp_{name}.pkl
+
+  # Inventory of the harmonised matrices: "cohort|layer" -> {shape, note}.
+  harmonised_inventory: harmonised/inventory.json
+
+  # Gene-level TCGA-UCEC methylation matrix with the 450K probes mapped to genes,
+  # re-read when the methylation layer is harmonised. The probe step that writes
+  # it shares the align_* probes of this stage.
+  harmonised_tcga_meth_genelevel: harmonised/TCGA_meth_genes.csv.gz
+
+  # EEEC batch testbed (stage 07). 07_01 builds the analysis matrix and its
+  # annotation tables from the MaxQuant proteinGroups file, 07_02 exports the
+  # sample matrices that the R corrections read and stores the Python correction
+  # arms, 07_03 writes the metric tables and 07_04 the sign-fixed verification
+  # table. The matrix, sample metadata and protein-to-gene map are declared
+  # above; the remaining artefacts live inside eeec_batch_dir as listed here.
+  eeec_batch_info: eeec_batch/info.json
+  eeec_batch_for_r_matrix: eeec_batch/for_R_matrix.csv
+  eeec_batch_for_r_meta: eeec_batch/for_R_meta.csv
+  eeec_batch_y_batch: eeec_batch/y_batch.npy
+  eeec_batch_y_cond: eeec_batch/y_cond.npy
+  eeec_batch_arms_json: eeec_batch/arms_py.json
+  eeec_batch_arms_npz: eeec_batch/arms_py.npz
+  # Correction arms produced by the R side (sva / limma) and read back here.
+  eeec_batch_arm_combat: eeec_batch/arm_ComBat.csv
+  eeec_batch_arm_combat_mean_only: eeec_batch/arm_ComBatMeanOnly.csv
+  eeec_batch_arm_remove_batch_effect: eeec_batch/arm_removeBatchEffect.csv
+  eeec_batch_metrics: eeec_batch/batch_metrics.csv
+  eeec_batch_pc_sweep: eeec_batch/pc_sweep.csv
+  eeec_batch_pc_assoc: eeec_batch/pc_assoc.csv
+  eeec_batch_results: eeec_batch/batch_results.json
+  eeec_batch_verify_csv: eeec_batch/batch_verify.csv
+  eeec_batch_verify_json: eeec_batch/batch_verify.json
+  # Same file under the shorter name the figure scripts use.
+  eeec_batch_verify: eeec_batch/batch_verify.json
+
+# --- Manuscript sources ------------------------------------------------------
+# Relative to manuscript_root. The table stage renders the table document here
+# and the verification stage reads the narrative sources here, so that every
+# number printed in the manuscript can be traced back to an artefact.
+
+manuscript:
+  methods: F1_Methods.md
+  results: F1_Results.md
+  tables_markdown: F1_Tables.md
+  tables_pdf: F1_Tables.pdf
+  discussion: F1_Discussion.md
+  cover_letter: F1_CoverLetter.md
+  # Figure-plan source. Its file name is not ASCII, so it is written as a
+  # \uXXXX escape and this file stays free of non-ASCII characters.
+  figure_plan: "F1_\u56fe\u4ef6\u89c4\u5212\u4e0e\u56fe\u6ce8.md"
+
+# --- Published results -------------------------------------------------------
+
+results:
+  figures_dir: figures/
+  tables_dir: tables/
+  verification_dir: verification/
