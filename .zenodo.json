@@ -1,0 +1,27 @@
+{
+  "title": "Cross-cohort multi-omic integration benchmark in gynaecological tumours: code, figures, tables and verification harness",
+  "description": "<p>Replication package for a methodological benchmark asking how well multi-omic integration transfers <strong>across independent cohorts</strong> rather than within a single cohort.</p><p>Five public cohorts (TCGA-UCEC, two independent CPTAC-UCEC cohorts, CPTAC-OV, and an early-onset endometrioid EC proteogenomic cohort), two fully independent toolchains (eight self-implemented Python methods and six official R packages), and two orthogonal perturbation designs (a perfectly crossed batch design and a cross-platform comparison) support three findings: (1) layer count has negative marginal value for cross-cohort transfer, replicated in both toolchains; (2) the &ldquo;best method&rdquo; is not a resolvable claim &mdash; the winner flips in 50% of evaluation units and the same method differs 17.6-fold between implementations; (3) the covariance layer is fragile, with first-order effect sizes transferring across platforms while second-order network structure retains only about 35% of that concordance.</p><p>All pre-registered decision gates were frozen before their corresponding analyses, with thresholds derived from the measured noise distribution rather than assumed. The package includes the staged analysis pipeline, the figure and table generation code, and a per-figure geometry-and-number verification harness that fails on sub-8&nbsp;pt type, overlapping text, or numbers that cannot be traced back to an analysis artefact.</p><p>Raw third-party data are not redistributed; DATA.md lists all sources and accessions. The manuscript text is not included.</p>",
+  "creators": [
+    {
+      "name": "Zhu, Tao",
+      "affiliation": "Department of Obstetrics and Gynaecology, Tongji Hospital, Huazhong University of Science and Technology",
+      "orcid": "0009-0001-0779-2245"
+    }
+  ],
+  "keywords": [
+    "multi-omics integration",
+    "cross-cohort transfer",
+    "benchmark",
+    "batch effects",
+    "reproducibility",
+    "endometrial cancer",
+    "ovarian cancer",
+    "cancer genomics"
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "language": "eng",
+  "related_identifiers": [],
+  "notes": "Two R packages (intNMF, MCIA) were delisted from CRAN and Bioconductor and are reimplemented from their original descriptions; they are labelled as equivalents and no substitute package was used in their place. MOFA2 results are indicative because KMP_DUPLICATE_LIB_OK was required (the package warns this may affect results). The reference partition used by the transfer metric is derived by K-means, which structurally favours K-means-family methods; the 'simplest methods win' statement is scoped accordingly."
+}
