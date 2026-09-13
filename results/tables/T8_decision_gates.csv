@@ -1,0 +1,7 @@
+gate,criterion,frozen_threshold,observed,verdict
+G0,≥300 samples in the 5-layer core set; ≥60 NSMP; ≥1 external multi-omic cohort,300 / 60 / ≥1,306 / 71 / 3 cohorts,PASS
+G0.5,"≥3 cross-cohort comparable layers, each with concordance ≥0.4","≥3 layers, ρ ≥ 0.4",mRNA 0.846–0.998; CNA 0.591–0.859; protein Δ 0.412–0.659; methylation fails,PASS
+G1,A gynaecological-specific defect in which all methods fail on one cancer type,cohort-specific failure pattern,Failures are consistent across methods and domains; not cancer-type specific,NOT SUPPORTED
+G2,Purity-aware arms improve held-out transfer ARI by ≥ +46.6% over baseline,baseline 0.4027; target 0.5904,All 6 arms worse (−13.0% to −44.7%); best arm is the baseline; 95% CI upper bound −20.3%,NOT PASSED (definitive)
+G3,NSMP substructure reproducible in ≥1 external cohort,"K=3; > max(null Q95, 0.10); degeneracy-filtered",All within-cohort clusterings degenerate (max cluster 0.70–0.99); split-half ARI ≈ 0,UNDECIDABLE
+G4,≥1 alignment strategy improves protein transfer significantly over S0,significant improvement over baseline,ComBat and Δ-reference identity-equal to baseline; quantile normalisation direction-inconsistent,NOT PASSED

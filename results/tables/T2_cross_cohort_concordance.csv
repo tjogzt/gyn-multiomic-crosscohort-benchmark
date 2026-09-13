@@ -1,0 +1,29 @@
+layer,cohort_pair,n_genes,spearman,p
+mRNA,TCGA-UCEC|CPTAC-ind,17803,0.9033,0.0
+mRNA,TCGA-UCEC|CPTAC-dis,17900,0.9022,0.0
+mRNA,TCGA-UCEC|CPTAC-OV,16302,0.879,0.0
+mRNA,CPTAC-ind|CPTAC-dis,27217,0.998,0.0
+mRNA,CPTAC-ind|CPTAC-OV,19930,0.8455,0.0
+mRNA,CPTAC-dis|CPTAC-OV,20515,0.8554,0.0
+Protein,CPTAC-ind|CPTAC-dis,10433,0.0347,0.0003925953100920082
+Protein,CPTAC-ind|CPTAC-OV,9273,-0.2563,5.711957698934571e-139
+Protein,CPTAC-dis|CPTAC-OV,9369,0.1434,3.1359679452883213e-44
+CNA,TCGA-UCEC|CPTAC-ind,20616,0.8446,0.0
+CNA,TCGA-UCEC|CPTAC-dis,20374,0.5974,0.0
+CNA,TCGA-UCEC|CPTAC-OV,16859,0.8592,0.0
+CNA,CPTAC-ind|CPTAC-dis,25736,0.6314,0.0
+CNA,CPTAC-ind|CPTAC-OV,16689,0.7159,0.0
+CNA,CPTAC-dis|CPTAC-OV,16413,0.5913,0.0
+Methylation (within CPTAC),CPTAC-ind|CPTAC-dis,11802,0.6884,0.0
+Protein (raw ratio),dis × ov,9369,0.1434,3.1359679452883213e-44
+Protein (raw ratio),dis × ind,10433,0.5404,0.0
+Protein (raw ratio),ov × ind,9273,-0.0664,1.523669199791447e-10
+Protein Δ(T−N),dis × ov,9369,0.46,0.0
+Protein Δ(T−N),dis × ind,10433,0.6593,0.0
+Protein Δ(T−N),ov × ind,9273,0.412,0.0
+Methylation (cross-platform),Methylation TCGA×ind,12303,0.249,2.9136022406693007e-173
+Methylation (cross-platform),Methylation TCGA×dis,13238,0.1952,7.918689441338655e-114
+Biological anchor,"mRNA–protein, Discovery",10977,0.627,0.0
+Biological anchor,"mRNA–protein, Independent",11010,0.4822,0.0
+Biological anchor,"mRNA–protein raw, Discovery",10980,0.1095,1.1896585443918592e-30
+Biological anchor,"mRNA–protein raw, Independent",11010,-0.0437,4.3949039174717565e-06

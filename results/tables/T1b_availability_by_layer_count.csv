@@ -1,0 +1,7 @@
+domain,cohort,n_samples_all_1_layers,n_samples_all_2_layers,n_samples_all_3_layers,n_samples_all_4_layers
+A (CPTAC three-cohort),OV,83.0,83.0,82.0,
+A (CPTAC three-cohort),dis,95.0,95.0,95.0,
+A (CPTAC three-cohort),ind,132.0,109.0,103.0,
+"B (EC, four-layer)",TCGA,539.0,524.0,415.0,390.0
+"B (EC, four-layer)",dis,95.0,95.0,91.0,81.0
+"B (EC, four-layer)",ind,138.0,132.0,103.0,84.0

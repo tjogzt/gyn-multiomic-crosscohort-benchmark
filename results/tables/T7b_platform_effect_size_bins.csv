@@ -1,0 +1,5 @@
+effect_size_bin,n_genes,spearman,sign_concordance
+Q1 (weakest),557,0.3431,0.6302
+Q2,556,0.5914,0.7464
+Q3,556,0.7265,0.9047
+Q4 (strongest),557,0.8132,0.9695

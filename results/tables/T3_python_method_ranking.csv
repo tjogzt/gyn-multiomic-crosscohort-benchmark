@@ -1,0 +1,9 @@
+method,domain_A_ARI,domain_B_ARI,overall_ARI,max_cluster_fraction,degeneracy_rate,n_records
+KMeans,0.2712,0.484,0.3947,0.559,0.02,50
+Co-association consensus,0.3825,0.3713,0.376,0.529,0.02,50
+Spectral embedding,0.2368,0.2365,0.2366,0.562,0.0,50
+MCCA-lite,0.1727,0.2349,0.2088,0.541,0.0,50
+MOFA-lite,0.1727,0.2349,0.2088,0.541,0.0,50
+NMF,0.1307,0.2127,0.1783,0.541,0.0,50
+PCA,0.1272,0.2135,0.1773,0.579,0.04,50
+SNF,0.0108,0.0125,0.0118,0.811,0.16,50

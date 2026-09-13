@@ -1,0 +1,9 @@
+# R 4.5.0 / Bioconductor 3.21
+sva 3.56.0
+limma 3.64.3
+SNFtool 2.3.1
+MOFA2 1.18.0
+iClusterPlus 1.44.0
+mixOmics 6.32.0
+# intNMF and MCIA were delisted from CRAN/Bioconductor and are reimplemented
+# from the original publications in src/04_benchmark_R/ -- no substitute package was used.

@@ -1,0 +1,246 @@
+# Tables
+
+**Manuscript**: More Omics Layers Do Not Mean Better Cross-Cohort Transfer
+**方向 F（GynRepanel）** · 生成日期 2026-09-13
+
+所有表格由分析产物**直接抽取生成**（`t1_tables.py`），未手工誊写。
+同名 CSV 位于 `tables/` 目录，随稿单独提交。
+
+---
+
+## Table 1a
+
+**Numeric domains of each cohort × layer matrix.** Values are the 5th, 50th and 95th percentiles of the measured values, together with the fraction of finite entries and the declared value domain. These are used to decide whether two matrices are numerically comparable before any alignment is attempted.
+
+| cohort | layer | n_features | domain | pct_finite | q05 | q50 | q95 |
+|---|---|---|---|---|---|---|---|
+| TCGA-UCEC | mRNA | 11069 | log2 ratio | 98.88 | 0 | 7.67 | 11.71 |
+| TCGA-UCEC | Methylation 450K | 478 | beta [0,1] | 80.62 | 0.018 | 0.4323 | 0.9509 |
+| TCGA-UCEC | RPPA | 440 | log2 ratio | 90.47 | -0.721165 | 0 | 0.831958 |
+| TCGA-UCEC | CNA (GISTIC2) | 539 | log2 ratio | 100 | -0.08 | 0.004 | 1.405 |
+| CPTAC-UCEC-ind | RNA-seq | 168 | log2(count+) | 100 | 0 | 8.28 | 12.36 |
+| CPTAC-UCEC-ind | Proteome | 158 | log2 ratio | 90.76 | -0.9 | -0.000148 | 1.02 |
+| CPTAC-UCEC-ind | Phosphoproteome | 158 | log2 ratio | 68.68 | -1.15647 | 0.12 | 1.33 |
+| CPTAC-UCEC-ind | Acetylproteome | 158 | log2 ratio | 52.07 | -1.26242 | 0.0566 | 1.59695 |
+| CPTAC-UCEC-ind | Methylation | 138 | beta [0,1] | 96.15 | 0.01813 | 0.03977 | 0.5853 |
+| CPTAC-UCEC-ind | CNA (log2) | 138 | log2 ratio | 95.65 | -0.011 | 0.004 | 1.322 |
+| CPTAC-UCEC-ind | CNA (GISTIC) | 138 | GISTIC [-2,2] | 95.65 | 0 | 0 | 1 |
+| CPTAC-UCEC-ind | miRNA | 148 | log2(count+) | 100 | 0 | 0 | 7.69 |
+| CPTAC-UCEC-dis | RNA-seq | 95 | log2(count+) | 100 | 0 | 8.4 | 12.41 |
+| CPTAC-UCEC-dis | Proteome | 95 | log2 ratio | 88.98 | -0.978 | -0.00379 | 1.02 |
+| CPTAC-UCEC-dis | Methylation | 91 | beta [0,1] | 100 | 0.02 | 0.03 | 0.5 |
+| CPTAC-UCEC-dis | SCNV | 95 | other | 99.97 | -0.11 | 0 | 0.43 |
+| CPTAC-OV-pro | RNA-seq | 82 | log2(count+) | 100 | 2.46771 | 4.34515 | 7.02571 |
+| CPTAC-OV-pro | Proteome | 83 | log2 ratio | 88.34 | -1.09577 | -0.0522601 | 0.797101 |
+| CPTAC-OV-pro | CNA | 83 | other | 100 | -0.41041 | 0.0771 | 0.4887 |
+
+*Source file: `T1a_layer_numeric_domains.csv`*
+
+---
+
+## Table 1b
+
+**Sample availability by cohort and number of integrated layers.** Each cell is the maximum number of samples with all *k* layers measured, taken over all layer subsets of size *k*. This is the quantity that collapses as layers are added (Figure 1a, Figure 2c).
+
+| domain | cohort | n_samples_all_1_layers | n_samples_all_2_layers | n_samples_all_3_layers | n_samples_all_4_layers |
+|---|---|---|---|---|---|
+| A (CPTAC three-cohort) | OV | 83 | 83 | 82 | NA |
+| A (CPTAC three-cohort) | dis | 95 | 95 | 95 | NA |
+| A (CPTAC three-cohort) | ind | 132 | 109 | 103 | NA |
+| B (EC, four-layer) | TCGA | 539 | 524 | 415 | 390 |
+| B (EC, four-layer) | dis | 95 | 95 | 91 | 81 |
+| B (EC, four-layer) | ind | 138 | 132 | 103 | 84 |
+
+*Source file: `T1b_availability_by_layer_count.csv`*
+
+---
+
+## Table 2
+
+**Cross-cohort concordance of gene-mean spectra.** Spearman ρ between the per-gene mean profiles of two cohorts, computed on the common gene space. Rows are ordered by layer family. The protein layer is shown both as raw TMT ratios and as tumour-minus-normal differences Δ(T−N). The final block gives the mRNA–protein biological anchor, which validates the Δ transformation.
+
+| layer | cohort_pair | n_genes | spearman | p |
+|---|---|---|---|---|
+| mRNA | TCGA-UCEC|CPTAC-ind | 17803 | 0.9033 | 0 |
+| mRNA | TCGA-UCEC|CPTAC-dis | 17900 | 0.9022 | 0 |
+| mRNA | TCGA-UCEC|CPTAC-OV | 16302 | 0.879 | 0 |
+| mRNA | CPTAC-ind|CPTAC-dis | 27217 | 0.998 | 0 |
+| mRNA | CPTAC-ind|CPTAC-OV | 19930 | 0.8455 | 0 |
+| mRNA | CPTAC-dis|CPTAC-OV | 20515 | 0.8554 | 0 |
+| Protein | CPTAC-ind|CPTAC-dis | 10433 | 0.0347 | 0.000392595 |
+| Protein | CPTAC-ind|CPTAC-OV | 9273 | -0.2563 | 5.71196e-139 |
+| Protein | CPTAC-dis|CPTAC-OV | 9369 | 0.1434 | 3.13597e-44 |
+| CNA | TCGA-UCEC|CPTAC-ind | 20616 | 0.8446 | 0 |
+| CNA | TCGA-UCEC|CPTAC-dis | 20374 | 0.5974 | 0 |
+| CNA | TCGA-UCEC|CPTAC-OV | 16859 | 0.8592 | 0 |
+| CNA | CPTAC-ind|CPTAC-dis | 25736 | 0.6314 | 0 |
+| CNA | CPTAC-ind|CPTAC-OV | 16689 | 0.7159 | 0 |
+| CNA | CPTAC-dis|CPTAC-OV | 16413 | 0.5913 | 0 |
+| Methylation (within CPTAC) | CPTAC-ind|CPTAC-dis | 11802 | 0.6884 | 0 |
+| Protein (raw ratio) | dis × ov | 9369 | 0.1434 | 3.13597e-44 |
+| Protein (raw ratio) | dis × ind | 10433 | 0.5404 | 0 |
+| Protein (raw ratio) | ov × ind | 9273 | -0.0664 | 1.52367e-10 |
+| Protein Δ(T−N) | dis × ov | 9369 | 0.46 | 0 |
+| Protein Δ(T−N) | dis × ind | 10433 | 0.6593 | 0 |
+| Protein Δ(T−N) | ov × ind | 9273 | 0.412 | 0 |
+| Methylation (cross-platform) | Methylation TCGA×ind | 12303 | 0.249 | 2.9136e-173 |
+| Methylation (cross-platform) | Methylation TCGA×dis | 13238 | 0.1952 | 7.91869e-114 |
+| Biological anchor | mRNA–protein, Discovery | 10977 | 0.627 | 0 |
+| Biological anchor | mRNA–protein, Independent | 11010 | 0.4822 | 0 |
+| Biological anchor | mRNA–protein raw, Discovery | 10980 | 0.1095 | 1.18966e-30 |
+| Biological anchor | mRNA–protein raw, Independent | 11010 | -0.0437 | 4.3949e-06 |
+
+*Source file: `T2_cross_cohort_concordance.csv`*
+
+---
+
+## Table 3
+
+**Cross-cohort transfer ARI for the eight self-implemented Python methods.** Record-weighted means over held-out cohort pairs and layer subsets, for domain A (CPTAC three-cohort) and domain B (TCGA + CPTAC-UCEC). `max_cluster_fraction` is the largest cluster share averaged over records and `degeneracy_rate` the fraction of records flagged as degenerate (> 0.70). Both must be read together with the ARI: the lowest-ARI method is also the most degenerate one.
+
+| method | domain_A_ARI | domain_B_ARI | overall_ARI | max_cluster_fraction | degeneracy_rate | n_records |
+|---|---|---|---|---|---|---|
+| KMeans | 0.2712 | 0.484 | 0.3947 | 0.559 | 0.02 | 50 |
+| Co-association consensus | 0.3825 | 0.3713 | 0.376 | 0.529 | 0.02 | 50 |
+| Spectral embedding | 0.2368 | 0.2365 | 0.2366 | 0.562 | 0 | 50 |
+| MCCA-lite | 0.1727 | 0.2349 | 0.2088 | 0.541 | 0 | 50 |
+| MOFA-lite | 0.1727 | 0.2349 | 0.2088 | 0.541 | 0 | 50 |
+| NMF | 0.1307 | 0.2127 | 0.1783 | 0.541 | 0 | 50 |
+| PCA | 0.1272 | 0.2135 | 0.1773 | 0.579 | 0.04 | 50 |
+| SNF | 0.0108 | 0.0125 | 0.0118 | 0.811 | 0.16 | 50 |
+
+*Source file: `T3_python_method_ranking.csv`*
+
+---
+
+## Table 4
+
+**Cross-cohort transfer ARI for the six R implementations.** Same evaluation protocol as Table 3. Two methods could not be installed (delisted from CRAN and Bioconductor) and were reimplemented from their original descriptions; this is stated explicitly rather than substituting a different package.
+
+| method | mean_ARI | n_records | implementation |
+|---|---|---|---|
+| intNMF (equivalent impl.) | 0.3385 | 50 | reimplemented (package delisted) |
+| MOFA2 | 0.3131 | 50 | official (indicative: KMP_DUPLICATE_LIB_OK set) |
+| iClusterPlus | 0.277 | 50 | official |
+| MCIA (equivalent impl., MFA) | 0.2716 | 50 | reimplemented (package delisted) |
+| mixOmics | 0.2354 | 47 | official (indY=1 for block.pls) |
+| SNF | 0.2081 | 50 | official |
+
+*Source file: `T4_R_package_ranking.csv`*
+
+---
+
+## Table 5a
+
+**Clustering stability (PAC) per method.** PAC is the proportion of sample pairs whose consensus value falls in (0.1, 0.9); lower is more stable. `strong_consensus` and `median_consensus` are reported alongside because a degenerate clustering yields a low PAC for a spurious reason — see Table 5a, SNF row, and Figure S4b.
+
+| method | PAC_A | PAC_B | PAC_overall | strong_consensus | median_consensus | n_records |
+|---|---|---|---|---|---|---|
+| SNF | 0.405 | 0.2582 | 0.3049 | 0.573 | 0.777 | 66 |
+| NMF | 0.45 | 0.4049 | 0.4192 | 0.154 | 0.21 | 66 |
+| KMeans | 0.4323 | 0.3576 | 0.3814 | 0.176 | 0.224 | 66 |
+| PCA | 0.6095 | 0.5939 | 0.5989 | 0.123 | 0.338 | 66 |
+| Spectral embedding | 0.5547 | 0.548 | 0.5502 | 0.1 | 0.241 | 66 |
+| Co-association consensus | 0.1789 | 0.2483 | 0.2262 | 0.222 | 0.097 | 66 |
+| MCCA-lite | 0.462 | 0.4197 | 0.4332 | 0.147 | 0.218 | 66 |
+| MOFA-lite | 0.462 | 0.4197 | 0.4332 | 0.147 | 0.218 | 66 |
+
+*Source file: `T5a_pac_by_method.csv`*
+
+---
+
+## Table 5b
+
+**Transfer ARI as a function of PAC.** Records binned by PAC. The monotone trend supports PAC as a screening aid in a single-cohort setting; the effect size is weak (Spearman −0.158, p = 0.0015) and does not replace cross-cohort validation.
+
+| bin | mean_transfer_ARI | n_pairs |
+|---|---|---|
+| [0.0, 0.3) | 0.289 | 87 |
+| [0.3, 0.45) | 0.2417 | 108 |
+| [0.45, 0.6) | 0.2161 | 153 |
+| [0.6, 1.01) | 0.102 | 52 |
+
+*Source file: `T5b_pac_bins_to_ARI.csv`*
+
+---
+
+## Table 6
+
+**Batch-correction testbed on the EEEC 2×2 design.** Nine correction arms applied to a design in which batch and condition are fully crossed with 49 samples per cell. `centroid_auc` measures per-gene mean separation and `total_separability` measures multivariate separability; both are sign-fixed so that 0.5 is chance and 1.0 is complete separation. Per-gene corrections drive `centroid_auc` to exactly 0.5 while `total_separability` stays at 1.0.
+
+| arm | n_features | centroid_auc | total_separability | svm_auc | ks_median | knn_mixing |
+|---|---|---|---|---|---|---|
+| S0 raw log2 | 2306 | 0.842 | 0.9957 | 0.9978 | 0.2143 | 0.2112 |
+| S1 global per-gene z | 2306 | 0.9243 | 0.9957 | 0.9978 | 0.2143 | 0.2112 |
+| S2 within-batch per-gene z (ceiling) | 2306 | 0.5 | 1 | 1 | 0.0918 | 0.3913 |
+| S3 per-sample quantile | 2306 | 0.8659 | 0.9953 | 0.998 | 0.2143 | 0.1893 |
+| S4 per-sample rank-to-INT | 2306 | 0.8748 | 0.9959 | 0.998 | 0.2143 | 0.1903 |
+| ComBat (sva) | 2306 | 0.5408 | 0.9911 | 0.9934 | 0.1122 | 0.3704 |
+| ComBat (mean-only) | 2306 | 0.8259 | 0.9903 | 0.9943 | 0.2041 | 0.227 |
+| removeBatchEffect (limma) | 2306 | 0.5 | 1 | 1 | 0.1122 | 0.3658 |
+| Harmony (embedding) | 50 | 0.6659 | 0.5217 | 0.5266 | 0.1173 | 0.4092 |
+
+*Source file: `T6_eeec_batch_testbed.csv`*
+
+---
+
+## Table 7a
+
+**Cross-platform comparability ladder for the protein layer.** Δ concordance between EEEC (label-free LFQ) and CPTAC (TMT) compared with the same-cohort cross-batch ceiling. Permutation p-values are from 500 label permutations.
+
+| comparison | n_genes | spearman | pearson | sign_concordance | slope | perm_p |
+|---|---|---|---|---|---|---|
+| EEEC-E vs EEEC-L (same cohort, cross-batch) | 2226 | 0.8307 | 0.8639 | 0.8621 | 0.7951 | 0.00199601 |
+| ③ EEEC vs CPTAC-Discovery | 2226 | 0.8473 | 0.8416 | 0.8127 | 0.8284 | 0.00199601 |
+| ④ CPTAC-Dis vs EEEC-E | 2226 | 0.8333 | 0.8321 | 0.8064 | 0.7593 | 0.00199601 |
+| ④ CPTAC-Dis vs EEEC-L | 2226 | 0.7943 | 0.7912 | 0.7925 | 0.7845 | 0.00199601 |
+
+*Source file: `T7a_platform_ladder.csv`*
+
+---
+
+## Table 7b
+
+**Cross-platform concordance by effect-size quartile of |Δ|.** Weak effects do not transfer; a gene signature intended for cross-platform use needs an effect-size threshold.
+
+| effect_size_bin | n_genes | spearman | sign_concordance |
+|---|---|---|---|
+| Q1 (weakest) | 557 | 0.3431 | 0.6302 |
+| Q2 | 556 | 0.5914 | 0.7464 |
+| Q3 | 556 | 0.7265 | 0.9047 |
+| Q4 (strongest) | 557 | 0.8132 | 0.9695 |
+
+*Source file: `T7b_platform_effect_size_bins.csv`*
+
+---
+
+## Table 7c
+
+**First-order versus second-order cross-platform agreement.** Δ effect sizes transfer at the same-cohort level, whereas the protein–protein correlation network retains only ~35% of that concordance.
+
+| level | n | spearman |
+|---|---|---|
+| First-order (Δ effect size) | 2226 | 0.8473 |
+| Second-order (protein–protein network) | 2434321 | 0.2968 |
+| PC1 loading axis | 2207 | 0.5698 |
+
+*Source file: `T7c_platform_levels.csv`*
+
+---
+
+## Table 8
+
+**Pre-registered decision gates.** All gates were frozen before the corresponding analysis, with thresholds derived from the measured noise distribution rather than assumed (Figure 5). Gates that could not be resolved are recorded as UNDECIDABLE rather than as failures; the distinction is central to the interpretation (Discussion §5).
+
+| gate | criterion | frozen_threshold | observed | verdict |
+|---|---|---|---|---|
+| G0 | ≥300 samples in the 5-layer core set; ≥60 NSMP; ≥1 external multi-omic cohort | 300 / 60 / ≥1 | 306 / 71 / 3 cohorts | PASS |
+| G0.5 | ≥3 cross-cohort comparable layers, each with concordance ≥0.4 | ≥3 layers, ρ ≥ 0.4 | mRNA 0.846–0.998; CNA 0.591–0.859; protein Δ 0.412–0.659; methylation fails | PASS |
+| G1 | A gynaecological-specific defect in which all methods fail on one cancer type | cohort-specific failure pattern | Failures are consistent across methods and domains; not cancer-type specific | NOT SUPPORTED |
+| G2 | Purity-aware arms improve held-out transfer ARI by ≥ +46.6% over baseline | baseline 0.4027; target 0.5904 | All 6 arms worse (−13.0% to −44.7%); best arm is the baseline; 95% CI upper bound −20.3% | NOT PASSED (definitive) |
+| G3 | NSMP substructure reproducible in ≥1 external cohort | K=3; > max(null Q95, 0.10); degeneracy-filtered | All within-cohort clusterings degenerate (max cluster 0.70–0.99); split-half ARI ≈ 0 | UNDECIDABLE |
+| G4 | ≥1 alignment strategy improves protein transfer significantly over S0 | significant improvement over baseline | ComBat and Δ-reference identity-equal to baseline; quantile normalisation direction-inconsistent | NOT PASSED |
+
+*Source file: `T8_decision_gates.csv`*
+
+---

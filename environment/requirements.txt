@@ -1,0 +1,9 @@
+# Python 3.12 (Anaconda). Verified versions:
+numpy==2.2.6
+pandas==2.2.3
+scipy==1.13.1
+scikit-learn==1.6.1
+matplotlib==3.9.3
+Pillow==11.2.1
+harmonypy==2.0.0
+PyMuPDF==1.25.1

@@ -1,0 +1,10 @@
+arm,n_features,centroid_auc,total_separability,svm_auc,ks_median,knn_mixing
+S0 raw log2,2306,0.842,0.9957,0.9978,0.2143,0.2112
+S1 global per-gene z,2306,0.9243,0.9957,0.9978,0.2143,0.2112
+S2 within-batch per-gene z (ceiling),2306,0.5,1.0,1.0,0.0918,0.3913
+S3 per-sample quantile,2306,0.8659,0.9953,0.998,0.2143,0.1893
+S4 per-sample rank-to-INT,2306,0.8748,0.9959,0.998,0.2143,0.1903
+ComBat (sva),2306,0.5408,0.9911,0.9934,0.1122,0.3704
+ComBat (mean-only),2306,0.8259,0.9903,0.9943,0.2041,0.227
+removeBatchEffect (limma),2306,0.5,1.0,1.0,0.1122,0.3658
+Harmony (embedding),50,0.6659,0.5217,0.5266,0.1173,0.4092

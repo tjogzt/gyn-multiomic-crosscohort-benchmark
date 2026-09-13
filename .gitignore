@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.Rhistory
+.RData
+.DS_Store
+# derived working objects (regenerate from public data)
+workdir/
+*.pkl
+*.npz
+*.npy
+!src/**

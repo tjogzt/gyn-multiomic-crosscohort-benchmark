@@ -1,0 +1,7 @@
+method,mean_ARI,n_records,implementation
+intNMF (equivalent impl.),0.3385,50,reimplemented (package delisted)
+MOFA2,0.3131,50,official (indicative: KMP_DUPLICATE_LIB_OK set)
+iClusterPlus,0.277,50,official
+"MCIA (equivalent impl., MFA)",0.2716,50,reimplemented (package delisted)
+mixOmics,0.2354,47,official (indY=1 for block.pls)
+SNF,0.2081,50,official
